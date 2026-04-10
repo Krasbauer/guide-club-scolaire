@@ -489,8 +489,8 @@ main {
   border: 1px solid;
   transition: background .15s, color .15s;
 }
-.btn-print  { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn-print:hover  { background: var(--accent-l); }
+.btn-docx   { background: #2b579a; color: #fff; border-color: #2b579a; }
+.btn-docx:hover   { background: #1e3f73; }
 .btn-pdf    { background: var(--surface); color: var(--blue); border-color: var(--blue); }
 .btn-pdf:hover    { background: var(--blue-bg); }
 .btn-pdf.soon { opacity: .5; cursor: not-allowed; }

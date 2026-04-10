@@ -443,7 +443,12 @@ function openFiche(id) {
   document.getElementById('modal-title').textContent = f.num + ' — ' + f.title;
   document.getElementById('modal-body').innerHTML = f.html;
 
-  // PDF button: descriptive download filename
+  // DOCX button
+  const docxBtn = document.getElementById('modal-docx-btn');
+  docxBtn.href = 'fiches-docx/' + f.id + '.docx';
+  docxBtn.setAttribute('download', f.num + ' — ' + f.title + '.docx');
+
+  // PDF button
   const pdfBtn = document.getElementById('modal-pdf-btn');
   pdfBtn.href = 'fiches-pdf/' + f.id + '.pdf';
   pdfBtn.setAttribute('download', f.num + ' — ' + f.title + '.pdf');
