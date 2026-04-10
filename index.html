@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الأندية التربوية — دليل مرجعي</title>
+  <meta name="description" content="دليل مرجعي شامل للأندية التربوية — مستخرَج من دليل الحياة المدرسية 2019، وزارة التربية الوطنية المغربية">
+  <meta name="theme-color" content="#2d6a4f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <span class="top-bar-title" id="top-bar-title">الأندية التربوية</span>
+    <span id="app-version" style="font-size:.65rem; opacity:.6; margin-inline-start:auto; padding-inline-end:.5rem; white-space:nowrap;">v0.3</span>
+  </header>
+
+  <!-- Main content -->
+  <main>
+    <section id="section-home"    class="section"></section>
+    <section id="section-concept" class="section"></section>
+    <section id="section-parcours"class="section"></section>
+    <section id="section-fiches"  class="section"></section>
+    <section id="section-legal"   class="section"></section>
+  </main>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-item" data-section="home">
+      <span class="nav-icon">🏠</span>
+      <span>الرئيسية</span>
+    </button>
+    <button class="nav-item" data-section="concept">
+      <span class="nav-icon">📖</span>
+      <span>المفهوم</span>
+    </button>
+    <button class="nav-item" data-section="parcours">
+      <span class="nav-icon">🗺️</span>
+      <span>المسار</span>
+    </button>
+    <button class="nav-item" data-section="fiches">
+      <span class="nav-icon">📋</span>
+      <span>البطاقات</span>
+    </button>
+    <button class="nav-item" data-section="legal">
+      <span class="nav-icon">⚖️</span>
+      <span>القانون</span>
+    </button>
+  </nav>
+
+</div><!-- /#app -->
+
+<!-- Fiche modal — global, not inside any section -->
+<div class="modal-overlay" id="fiche-modal" onclick="closeFicheModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-top no-print">
+      <span class="modal-title" id="modal-title"></span>
+      <button class="modal-close" onclick="closeFicheModal()">✕</button>
+    </div>
+    <div class="modal-actions no-print">
+      <button class="btn btn-print" onclick="printFiche()">🖨️ طباعة</button>
+      <a class="btn btn-pdf" id="modal-pdf-btn" href="#" target="_blank">📥 PDF الرسمي</a>
+    </div>
+    <div class="modal-content" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Dedicated print area (hidden on screen, shown when printing) -->
+<div id="print-area"></div>
+
+<!-- Facilitator mode (full-screen overlay) -->
+<div id="facilitator-mode">
+  <div class="facilitator-top">
+    <span class="facilitator-top-title">🎯 وضع المُيسِّر — محاكاة صفية</span>
+    <button class="btn-exit-facilitator" id="btn-exit-facilitator">✕ الخروج</button>
+  </div>
+  <div class="facilitator-content" id="facilitator-content">
+    <div id="facilitator-slides"></div>
+  </div>
+  <div class="facilitator-footer">
+    <button class="btn-nav btn-nav-prev" id="btn-prev" disabled>→ السابق</button>
+    <span class="step-counter" id="slide-counter">1 / 8</span>
+    <button class="btn-nav btn-nav-next" id="btn-next">التالي ←</button>
+  </div>
+</div>
+
+<!-- Data files -->
+<script src="js/data/legal.js"></script>
+<script src="js/data/fiches.js"></script>
+<script src="js/data/parcours.js"></script>
+
+<!-- App -->
+<script src="js/main.js"></script>
+
+</body>
+</html>
