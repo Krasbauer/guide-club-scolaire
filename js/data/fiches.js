@@ -72,7 +72,7 @@ window.FICHES = [
     html: `<div class="fiche-preview">
   <div class="fp-title">نموذج محضر تأسيس النادي</div>
   <div class="fp-announce-wrap">
-    <div class="fp-pill-wrap"><span class="fp-pill">إعـــلان</span></div>
+    <div class="fp-pill-wrap"><span class="fp-pill fp-pill-pv">محضـر</span></div>
     <p>
       انعقد يوم <span class="fp-ph">(يحدد اليوم)</span> على الساعة <span class="fp-ph">(تحدد الساعة)</span> الجمع العام التأسيسي
       لنادي <span class="fp-ph">(يحدد اسم النادي)</span> تحت إشراف <span class="fp-ph">(يحدد المشرف: الإدارة / منسق النادي...)</span>

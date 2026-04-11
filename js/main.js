@@ -8,7 +8,7 @@ const state = {
   currentSection: 'home',
   facilitatorSlide: 0,
   modalFiche: null,
-  showInstitutional: false,
+  showInstitutional: true,
 };
 
 /* ── Section ids ────────────────────────────────────── */
@@ -86,21 +86,44 @@ function bindNav() {
 function renderHome() {
   const el = document.getElementById('section-home');
   el.innerHTML = `
-    <div style="text-align:center; padding:1.5rem 0 1rem;">
-      <div style="font-size:2.5rem; margin-bottom:.5rem;">🏫</div>
-      <h1 style="color:var(--accent); font-size:1.3rem;">Guide Club Scolaire</h1>
-      <p class="text-muted" style="font-size:.83rem; margin-top:.35rem;">الأندية التربوية — دليل الحياة المدرسية 2019</p>
-      <span style="display:inline-block; background:var(--accent-bg); color:var(--accent); font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:20px; margin-top:.4rem;">
-        دليل مرجعي معتمد
-      </span>
+
+    <!-- Hero -->
+    <div class="home-hero">
+      <div class="home-hero-icon">🏫</div>
+      <h1>Guide Club Scolaire</h1>
+      <p>أداة مرجعية شاملة لإحداث الأندية التربوية وتسييرها<br>وفق الإجراءات الرسمية لوزارة التربية الوطنية المغربية</p>
+      <div class="home-chips">
+        <span class="home-chip">11 خطوة إحداث</span>
+        <span class="home-chip">11 نموذجاً رسمياً</span>
+        <span class="home-chip">6 مراجع قانونية</span>
+        <span class="home-chip">🎯 وضع المُيسِّر</span>
+      </div>
     </div>
 
-    <div class="cards-grid" style="margin-top:.75rem;">
+    <!-- Info cards -->
+    <div class="home-info-card">
+      <h3>📋 ما هذا الدليل؟</h3>
+      <p>مرجع عملي يُرافقك عبر كل مراحل إحداث نادٍ تربوي — من الإخطار المؤسسي حتى التقويم النهائي. كل خطوة مرتبطة بنماذجها الرسمية القابلة للتحميل والطباعة.</p>
+    </div>
+
+    <div class="home-info-card">
+      <h3>👤 لمن؟</h3>
+      <p>الأساتذة المتدربون بالمراكز الجهوية لمهن التربية والتكوين (CRMEF) · الأساتذة الجدد في الميدان · منسقو الأندية التربوية</p>
+    </div>
+
+    <div class="home-info-card">
+      <h3>📚 المصدر الرسمي</h3>
+      <p>دليل الحياة المدرسية 2019 وملاحقه — مديرية الحياة المدرسية، وزارة التربية الوطنية المغربية</p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="home-section-title">الأقسام</div>
+    <div class="cards-grid">
       <div class="nav-card" onclick="navigateTo('concept')">
         <span class="card-icon">📖</span>
         <div class="card-body">
           <div class="card-title">المفهوم</div>
-          <div class="card-sub">التعريف والأهداف والهيكل</div>
+          <div class="card-sub">التعريف، الأهداف، الأنواع</div>
         </div>
         <span class="card-arrow">‹</span>
       </div>
@@ -109,7 +132,7 @@ function renderHome() {
         <span class="card-icon">🗺️</span>
         <div class="card-body">
           <div class="card-title">المسار</div>
-          <div class="card-sub">خطوات الإحداث الكاملة</div>
+          <div class="card-sub">11 خطوة من الإخطار إلى التقويم</div>
         </div>
         <span class="card-arrow">‹</span>
       </div>
@@ -118,7 +141,7 @@ function renderHome() {
         <span class="card-icon">📋</span>
         <div class="card-body">
           <div class="card-title">البطاقات</div>
-          <div class="card-sub">11 نموذجاً رسمياً</div>
+          <div class="card-sub">11 نموذجاً رسمياً — PDF + DOCX</div>
         </div>
         <span class="card-arrow">‹</span>
       </div>
@@ -127,34 +150,25 @@ function renderHome() {
         <span class="card-icon">⚖️</span>
         <div class="card-body">
           <div class="card-title">القانون</div>
-          <div class="card-sub">المرجعية القانونية</div>
+          <div class="card-sub">6 نصوص قانونية مُهيكِلة</div>
         </div>
         <span class="card-arrow">‹</span>
       </div>
-
-      <div class="nav-card facilitator card-wide" onclick="openFacilitator()">
-        <span class="card-icon">🎯</span>
-        <div class="card-body">
-          <div class="card-title">وضع المُيسِّر</div>
-          <div class="card-sub">لتأطير نشاط صفي — محاكاة تأسيس نادٍ في القسم</div>
-        </div>
-        <span class="card-arrow" style="color:var(--gold);">‹</span>
-      </div>
-
-      <div class="nav-card card-wide" onclick="openActivitiesBank()" style="border-right:3px solid var(--blue);">
-        <span class="card-icon">💡</span>
-        <div class="card-body">
-          <div class="card-title" style="color:var(--blue);">بنك الأنشطة</div>
-          <div class="card-sub">8 مجالات × 4 أنشطة — مقترحات لبرامج الأندية</div>
-        </div>
-        <span class="card-arrow" style="color:var(--blue);">‹</span>
-      </div>
     </div>
 
-    <div class="section-intro" style="margin-top:1rem;">
-      <strong style="display:block; margin-bottom:.4rem; color:var(--txt);">كيف تستخدم هذا الدليل؟</strong>
-      ابدأ بـ<strong>المفهوم</strong> لتتعرف على الأندية التربوية وأهدافها، ثم اطَّلع على <strong>المسار</strong> لمعرفة خطوات الإحداث كاملةً، وارجع إلى <strong>البطاقات</strong> لتحميل النماذج الرسمية واستخدامها.
-      إذا كنت تُنظِّم نشاطاً صفياً لمحاكاة تأسيس نادٍ، استخدم <strong>وضع المُيسِّر</strong>.
+    <!-- Facilitator mode -->
+    <div class="nav-card facilitator card-wide" onclick="openFacilitator()" style="margin-top:.5rem;">
+      <span class="card-icon">🎯</span>
+      <div class="card-body">
+        <div class="card-title">وضع المُيسِّر</div>
+        <div class="card-sub">محاكاة تفاعلية لتأسيس نادٍ — مُصمَّم للأنشطة الصفية</div>
+      </div>
+      <span class="card-arrow" style="color:var(--gold);">‹</span>
+    </div>
+
+    <!-- Activities bank — subtle -->
+    <div class="home-activities-link" onclick="openActivitiesBank()">
+      💡 بنك الأنشطة — 8 مجالات × 4 مقترحات
     </div>`;
 }
 
@@ -439,8 +453,8 @@ function renderParcours() {
 
   const toggle = `
     <div class="level-toggle">
-      <input type="checkbox" id="show-institutional" onchange="toggleInstitutional(this.checked)">
-      <label for="show-institutional">إظهار المستوى المؤسسي (الخطوات 1-4)</label>
+      <input type="checkbox" id="show-institutional" checked onchange="toggleInstitutional(this.checked)">
+      <label for="show-institutional">إخفاء المستوى المؤسسي (الخطوات 1-4)</label>
     </div>`;
 
   const timeline = steps.map(step => {
@@ -457,7 +471,7 @@ function renderParcours() {
 
     return `
       <div class="timeline-step ${step.level}${isInstitutional ? ' institutional-step' : ''}"
-           style="${isInstitutional && !state.showInstitutional ? 'display:none;' : ''}">
+           style="${isInstitutional && !state.showInstitutional ? 'display:none' : ''}">
         <div class="step-indicator">
           <div class="step-circle">${step.num}</div>
         </div>
@@ -476,6 +490,21 @@ function renderParcours() {
               <div class="fiche-chips" style="margin-top:.7rem;">
                 <span style="font-size:.75rem; color:var(--txt-muted); align-self:center;">النماذج:</span>
                 ${chips}
+              </div>
+              <div class="step-fiche-downloads">
+                ${step.fiches.map(id => {
+                  const f = window.FICHES.find(x => x.id === id);
+                  if (!f) return '';
+                  return `
+                    <a class="step-dl-btn step-dl-pdf" href="fiches-pdf/${f.id}.pdf" download="${f.num} — ${f.title}.pdf">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M5 14l7 7 7-7"/><path d="M3 21h18"/></svg>
+                      ${f.num} PDF
+                    </a>
+                    <a class="step-dl-btn step-dl-docx" href="fiches-docx/${f.id}.docx" download="${f.num} — ${f.title}.docx">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M5 14l7 7 7-7"/><path d="M3 21h18"/></svg>
+                      ${f.num} DOCX
+                    </a>`;
+                }).join('')}
               </div>` : ''}
             ${makeStepSub('legal-' + step.id, '⚖️ السند القانوني', step.legal)}
             ${makeStepSub('why-' + step.id, '💡 لماذا هذه المرحلة؟', step.why)}
@@ -515,6 +544,8 @@ function toggleInstitutional(show) {
   document.querySelectorAll('.institutional-step').forEach(el => {
     el.style.display = show ? '' : 'none';
   });
+  const lbl = document.querySelector('label[for="show-institutional"]');
+  if (lbl) lbl.textContent = show ? 'إخفاء المستوى المؤسسي (الخطوات 1-4)' : 'إظهار المستوى المؤسسي (الخطوات 1-4)';
 }
 
 function makeStepSub(id, label, content) {
@@ -582,7 +613,16 @@ function openFiche(id) {
   state.modalFiche = id;
 
   document.getElementById('modal-title').textContent = f.num + ' — ' + f.title;
-  document.getElementById('modal-body').innerHTML = f.html;
+
+  // Step context banner
+  const step = window.PARCOURS.find(s => s.id === f.step);
+  const ctxHtml = step ? `
+    <div class="fiche-step-ctx">
+      <span class="fiche-step-ctx-label">تُستخدم في: <strong>الخطوة ${step.num} — ${step.title}</strong></span>
+      <button class="fiche-step-ctx-btn" onclick="closeFicheModal(); navigateTo('parcours'); setTimeout(()=>{ toggleStep('${step.id}'); document.getElementById('body-${step.id}').scrollIntoView({behavior:'smooth',block:'center'}); }, 300);">عرض الخطوة</button>
+    </div>` : '';
+
+  document.getElementById('modal-body').innerHTML = ctxHtml + f.html;
 
   // DOCX button
   const docxBtn = document.getElementById('modal-docx-btn');
@@ -634,36 +674,50 @@ function printFiche() {
 /* ── Legal ───────────────────────────────────────────── */
 function renderLegal() {
   const el = document.getElementById('section-legal');
+  const categories = window.LEGAL_CATEGORIES;
   const texts = window.LEGAL;
 
-  const cards = texts.map(t => `
-    <div class="legal-card">
-      <div class="legal-card-header">
-        <div class="legal-num">${t.num}</div>
-        <div class="legal-info">
-          <div class="legal-title">${t.title}</div>
-          <div class="legal-date">${t.subtitle} &nbsp;·&nbsp; ${t.date}</div>
+  const sections = categories.map(cat => {
+    const catTexts = texts.filter(t => t.category === cat.id);
+    const cards = catTexts.map(t => `
+      <div class="legal-card">
+        <div class="legal-card-header">
+          <div class="legal-num" style="background:${cat.bg}; color:${cat.color};">${t.num}</div>
+          <div class="legal-info">
+            <div class="legal-title">${t.title}</div>
+            <div class="legal-date">${t.subtitle} &nbsp;·&nbsp; ${t.date}</div>
+          </div>
         </div>
-      </div>
-      <div class="legal-body">
-        <p style="font-size:.85rem; line-height:1.75; color:var(--txt-muted);">${t.context}</p>
-        <div class="legal-key-articles">
-          <strong>الأحكام ذات الصلة بالأندية:</strong>
-          <ul style="padding-right:1.1rem; list-style:disc; line-height:1.9;">
-            ${t.keyArticles.map(a => `<li>${a}</li>`).join('')}
-          </ul>
+        <div class="legal-body">
+          <p style="font-size:.85rem; line-height:1.75; color:var(--txt-muted);">${t.context}</p>
+          <div class="legal-key-articles">
+            <strong>الأحكام ذات الصلة بالأندية:</strong>
+            <ul style="padding-right:1.1rem; list-style:disc; line-height:1.9;">
+              ${t.keyArticles.map(a => `<li>${a}</li>`).join('')}
+            </ul>
+          </div>
+          <p style="font-size:.8rem; color:${cat.color}; margin-top:.6rem; font-style:italic; line-height:1.6; opacity:.85;">
+            ◀ ${t.relevance}
+          </p>
         </div>
-        <p style="font-size:.8rem; color:var(--txt-muted); margin-top:.6rem; font-style:italic; line-height:1.6;">
-          ${t.relevance}
-        </p>
-      </div>
-    </div>`).join('');
+      </div>`).join('');
+
+    return `
+      <div class="legal-category">
+        <div class="legal-cat-header" style="border-right:3px solid ${cat.color}; background:${cat.bg};">
+          <span class="legal-cat-label" style="color:${cat.color};">${cat.label}</span>
+          ${cat.priority ? `<span class="legal-cat-badge">الأكثر أهمية عملياً</span>` : ''}
+          <p class="legal-cat-desc">${cat.desc}</p>
+        </div>
+        ${cards}
+      </div>`;
+  }).join('');
 
   el.innerHTML = `
     <p class="section-intro">
-      المرجعية القانونية المُهيكِلة للأندية التربوية، مرتَّبة من النص التأسيسي إلى الإجرائي.
+      6 نصوص قانونية مُصنَّفة حسب مستواها — من التأسيس الفلسفي إلى الإجراء العملي. ابدأ بالمستوى التنظيمي إذا كنت تريد تأسيس نادٍ فوراً.
     </p>
-    ${cards}
+    ${sections}
   `;
 }
 
