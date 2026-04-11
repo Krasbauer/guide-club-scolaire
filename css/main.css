@@ -83,19 +83,20 @@ p  { line-height: 1.75; }
 .btn-install {
   display: none;
   align-items: center;
-  gap: .3rem;
+  gap: .4rem;
   margin-inline-start: auto;
-  padding: .3rem .7rem;
-  border: 1.5px solid var(--accent);
-  border-radius: 20px;
-  font-size: .75rem;
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-bg);
+  padding: .45rem .9rem;
+  border: none;
+  border-radius: 8px;
+  font-size: .8rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--accent);
   white-space: nowrap;
-  transition: background .15s;
+  box-shadow: 0 2px 6px rgba(45,106,79,.35);
+  transition: background .15s, box-shadow .15s;
 }
-.btn-install:hover { background: #b7e4c7; }
+.btn-install:hover { background: var(--accent-l); box-shadow: 0 3px 10px rgba(45,106,79,.45); }
 .btn-install.visible { display: flex; }
 
 /* Main content area */
