@@ -1140,13 +1140,13 @@ function bindFacilitator() {
   content.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     if (Math.abs(dx) < 40) return; // ignore small movements
-    if (dx > 0 && state.facilitatorSlide > 0) {
-      // swipe right → previous (RTL: swipe right = go forward in reading direction = previous slide)
-      state.facilitatorSlide--;
-      showSlide(state.facilitatorSlide);
-    } else if (dx < 0 && state.facilitatorSlide < FACILITATOR_SLIDES.length - 1) {
+    if (dx < 0 && state.facilitatorSlide < FACILITATOR_SLIDES.length - 1) {
       // swipe left → next
       state.facilitatorSlide++;
+      showSlide(state.facilitatorSlide);
+    } else if (dx > 0 && state.facilitatorSlide > 0) {
+      // swipe right → previous
+      state.facilitatorSlide--;
       showSlide(state.facilitatorSlide);
     }
   }, { passive: true });
