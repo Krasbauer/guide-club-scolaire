@@ -986,7 +986,7 @@ body.printing-fiche #print-area {
 }
 
 /* Editable table cells */
-.fi-table td { padding: 2px; }
+.fi-table td { padding: 2px; height: auto; min-height: 2rem; }
 .fi-cell {
   min-height: 26px;
   padding: .2rem .3rem;
@@ -1025,6 +1025,16 @@ body.printing-fiche #print-area {
 }
 .fi-btn-clear:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
 .fi-btn-print:hover { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); }
+
+/* Eval body when it contains a textarea */
+.fp-eval-body:has(.fi-textarea) { padding: 0; }
+.fi-textarea-full {
+  border-radius: 0;
+  border: none;
+  border-top: none;
+  min-height: 160px;
+}
+.fi-textarea-full:focus { background: var(--accent-bg); }
 
 /* Print values (used in printFillable serialization) */
 .fi-print-val { display: inline; border-bottom: 1px solid #999; min-width: 60px; }
