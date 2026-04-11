@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
@@ -18,7 +19,8 @@
   <!-- Top bar -->
   <header class="top-bar">
     <span class="top-bar-title" id="top-bar-title">Guide Club Scolaire</span>
-    <span id="app-version" style="font-size:.65rem; opacity:.6; margin-inline-start:auto; padding-inline-end:.5rem; white-space:nowrap;">v0.5</span>
+    <span id="app-version" style="font-size:.65rem; opacity:.6; margin-inline-start:auto; padding-inline-end:.5rem; white-space:nowrap;">v0.6</span>
+    <button id="btn-install" title="تثبيت التطبيق" style="display:none; background:none; border:none; cursor:pointer; padding:0 .5rem; font-size:1.1rem; color:white; opacity:.85;" onclick="installApp()">⬇️</button>
   </header>
 
   <!-- Main content -->

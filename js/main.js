@@ -1166,3 +1166,23 @@ function toggleCollapsible(id) {
   const el = document.getElementById('col-' + id);
   el.classList.toggle('open');
 }
+
+/* ── PWA Install ─────────────────────────────────────── */
+let _installPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installPrompt = e;
+  document.getElementById('btn-install').style.display = '';
+});
+
+window.addEventListener('appinstalled', () => {
+  _installPrompt = null;
+  document.getElementById('btn-install').style.display = 'none';
+});
+
+function installApp() {
+  if (!_installPrompt) return;
+  _installPrompt.prompt();
+  _installPrompt.userChoice.then(() => { _installPrompt = null; });
+}
