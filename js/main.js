@@ -104,17 +104,17 @@ function renderHome() {
 
     <!-- Info cards -->
     <div class="home-info-card">
-      <h3>📋 ما هذا الدليل؟</h3>
+      <h2 class="home-card-title">📋 ما هذا الدليل؟</h2>
       <p>مرجع عملي يُرافقك عبر كل مراحل إحداث نادٍ تربوي — من الإخطار المؤسسي حتى التقويم النهائي. كل خطوة مرتبطة بنماذجها الرسمية القابلة للتحميل والطباعة.</p>
     </div>
 
     <div class="home-info-card">
-      <h3>👤 لمن؟</h3>
+      <h2 class="home-card-title">👤 لمن؟</h2>
       <p>الأساتذة المتدربون بالمراكز الجهوية لمهن التربية والتكوين (CRMEF) · الأساتذة الجدد في الميدان · منسقو الأندية التربوية</p>
     </div>
 
     <div class="home-info-card">
-      <h3>📚 المصدر الرسمي</h3>
+      <h2 class="home-card-title">📚 المصدر الرسمي</h2>
       <p>دليل الحياة المدرسية 2019 وملاحقه — مديرية الحياة المدرسية، وزارة التربية الوطنية المغربية</p>
     </div>
 
@@ -517,7 +517,7 @@ function renderParcours() {
 
   const facilitatorLink = `
     <div style="text-align:center; margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--border);">
-      <button onclick="openFacilitator()" style="background:var(--gold); color:white; border:none; border-radius:10px; padding:.65rem 1.4rem; font-size:.88rem; font-weight:700; cursor:pointer;">
+      <button type="button" onclick="openFacilitator()" class="btn-open-facilitator">
         🎯 فتح وضع المُيسِّر — محاكاة صفية
       </button>
       <p class="text-muted" style="font-size:.75rem; margin-top:.4rem;">يُغطي الخطوات 5-11 (مستوى النادي) بشكل تفاعلي للقسم</p>
@@ -630,10 +630,10 @@ function openFiche(id) {
   // Fill button
   const fillBtn = document.getElementById('modal-fill-btn');
   if (f.fillable) {
-    fillBtn.style.display = '';
+    fillBtn.hidden = false;
     fillBtn.textContent = '✏️ ملء النموذج';
   } else {
-    fillBtn.style.display = 'none';
+    fillBtn.hidden = true;
   }
 
   // DOCX button
@@ -709,7 +709,7 @@ function renderLegal() {
               ${t.keyArticles.map(a => `<li>${a}</li>`).join('')}
             </ul>
           </div>
-          <p style="font-size:.8rem; color:${cat.color}; margin-top:.6rem; font-style:italic; line-height:1.6; opacity:.85;">
+          <p style="font-size:.8rem; color:var(--txt-muted); margin-top:.6rem; font-style:italic; line-height:1.6;">
             ◀ ${t.relevance}
           </p>
         </div>

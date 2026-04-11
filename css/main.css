@@ -114,6 +114,18 @@ p  { line-height: 1.75; }
 }
 .btn-search-top:hover { background: var(--accent-bg); }
 
+/* Version badge — sufficient contrast at rest */
+.app-version-badge {
+  font-size: .65rem;
+  color: var(--txt-muted);   /* #5a7063 on white — passes AA */
+  margin-inline-start: auto;
+  padding-inline-end: .5rem;
+  white-space: nowrap;
+}
+
+/* Search icon in overlay */
+.search-icon { flex-shrink: 0; opacity: .5; }
+
 /* Main content area */
 main {
   padding: 1rem 1rem calc(var(--nav-h) + 1.5rem);
@@ -144,7 +156,22 @@ main {
   padding: .85rem 1rem;
   margin-bottom: .65rem;
 }
-.home-info-card h3 { font-size: .88rem; margin-bottom: .35rem; color: var(--accent); }
+.home-info-card h3, .home-card-title { font-size: .88rem; margin-bottom: .35rem; color: var(--accent); font-weight: 700; }
+
+/* Facilitator open button — dark text on gold for WCAG AA contrast */
+.btn-open-facilitator {
+  background: var(--gold-bg);
+  color: #5a3e1b;           /* dark brown on gold-bg: >7:1 contrast */
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: .65rem 1.4rem;
+  font-size: .88rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-open-facilitator:hover { background: #fde8b8; }
 .home-info-card p { font-size: .8rem; color: var(--txt-muted); line-height: 1.7; margin: 0; }
 .home-section-title {
   font-size: .72rem; font-weight: 700; color: var(--txt-muted);
@@ -310,6 +337,7 @@ main {
   justify-content: space-between;
   padding: .85rem 1rem;
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
   gap: .5rem;
   -webkit-tap-highlight-color: transparent;
@@ -508,7 +536,7 @@ main {
 
 /* Group colors */
 .group-green  .fiche-card-num { background: var(--accent-bg); color: var(--accent); }
-.group-gold   .fiche-card-num { background: var(--gold-bg);   color: var(--gold); }
+.group-gold   .fiche-card-num { background: var(--gold-bg);   color: #6b4a0e; }  /* darkened for WCAG AA contrast */
 .group-blue   .fiche-card-num { background: var(--blue-bg);   color: var(--blue); }
 .group-violet .fiche-card-num { background: var(--violet-bg); color: var(--violet); }
 
@@ -771,7 +799,8 @@ main {
 .legal-cat-label { font-size: .88rem; font-weight: 700; display: block; margin-bottom: .2rem; }
 .legal-cat-badge {
   display: inline-block;
-  background: var(--gold); color: white;
+  background: var(--gold-bg); color: #6b4a0e;  /* dark on light gold — WCAG AA */
+  border: 1px solid var(--gold);
   font-size: .65rem; font-weight: 700;
   padding: 2px 8px; border-radius: 10px;
   margin-bottom: .25rem;
@@ -915,13 +944,6 @@ main {
 }
 
 /* --- Skeleton / loading ------------------------------- */
-.skeleton {
-  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 6px;
-}
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* --- Print area (hidden on screen) -------------------- */
 #print-area { display: none; }
@@ -1050,6 +1072,7 @@ body.printing-fiche #print-area {
   inset: 0;
   z-index: 300;
   background: rgba(0,0,0,.45);
+  -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
   align-items: flex-start;
   justify-content: center;
