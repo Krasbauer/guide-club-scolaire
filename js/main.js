@@ -9,6 +9,7 @@ const state = {
   facilitatorSlide: 0,
   modalFiche: null,
   showInstitutional: true,
+  fillMode: false,
 };
 
 /* ── Section ids ────────────────────────────────────── */
@@ -623,7 +624,17 @@ function openFiche(id) {
       <button class="fiche-step-ctx-btn" onclick="closeFicheModal(); navigateTo('parcours'); setTimeout(()=>{ toggleStep('${step.id}'); document.getElementById('body-${step.id}').scrollIntoView({behavior:'smooth',block:'center'}); }, 300);">عرض الخطوة</button>
     </div>` : '';
 
+  state.fillMode = false;
   document.getElementById('modal-body').innerHTML = ctxHtml + f.html;
+
+  // Fill button
+  const fillBtn = document.getElementById('modal-fill-btn');
+  if (f.fillable) {
+    fillBtn.style.display = '';
+    fillBtn.textContent = '✏️ ملء النموذج';
+  } else {
+    fillBtn.style.display = 'none';
+  }
 
   // DOCX button
   const docxBtn = document.getElementById('modal-docx-btn');
@@ -647,6 +658,7 @@ function closeFicheModalUI() {
   document.getElementById('fiche-modal').classList.remove('open');
   document.body.style.overflow = '';
   state.modalFiche = null;
+  state.fillMode = false;
 }
 
 /* Called from onclick (✕ button or overlay tap) — goes back in history */
@@ -1112,6 +1124,202 @@ const FACILITATOR_SLIDES = [
     tip: 'للحفظ: "أسَّس ↔ خطَّط ↔ نفَّذ ↔ قيَّم" — كل حلقة لها بطاقة. الدورة تتكرر كل سنة.',
   },
 ];
+
+/* ── Fillable fiches ─────────────────────────────────── */
+function toggleFillMode() {
+  const f = window.FICHES.find(x => x.id === state.modalFiche);
+  if (!f) return;
+  state.fillMode = !state.fillMode;
+
+  const btn = document.getElementById('modal-fill-btn');
+  const step = window.PARCOURS.find(s => s.id === f.step);
+  const ctxHtml = step ? `
+    <div class="fiche-step-ctx">
+      <span class="fiche-step-ctx-label">تُستخدم في: <strong>الخطوة ${step.num} — ${step.title}</strong></span>
+      <button class="fiche-step-ctx-btn" onclick="closeFicheModal(); navigateTo('parcours'); setTimeout(()=>{ toggleStep('${step.id}'); document.getElementById('body-${step.id}').scrollIntoView({behavior:'smooth',block:'center'}); }, 300);">عرض الخطوة</button>
+    </div>` : '';
+
+  if (state.fillMode) {
+    btn.textContent = '👁 عرض النموذج';
+    document.getElementById('modal-body').innerHTML = ctxHtml + buildFillableF08();
+    loadFillable('F-08');
+    bindFillableInputs('F-08');
+  } else {
+    btn.textContent = '✏️ ملء النموذج';
+    document.getElementById('modal-body').innerHTML = ctxHtml + f.html;
+  }
+}
+
+function buildFillableF08() {
+  const inp = (key, placeholder='', extra='') =>
+    `<input class="fi-input" data-fkey="${key}" placeholder="${placeholder}" autocomplete="off" ${extra}>`;
+  const cell = (key) =>
+    `<div class="fi-cell" data-fkey="${key}" contenteditable="true"></div>`;
+
+  const hasSaved = !!localStorage.getItem('fill-F-08');
+  const savedBadge = hasSaved
+    ? `<span class="fi-saved-badge">💾 يوجد حفظ مسبق</span>`
+    : '';
+
+  return `<div class="fiche-preview fiche-fillable" id="fiche-fill-F-08">
+
+  <div class="fi-toolbar no-print">
+    <span class="fi-toolbar-label">وضع الملء — يُحفظ تلقائياً على هذا الجهاز ${savedBadge}</span>
+    <button class="fi-btn-clear" onclick="clearFillable('F-08')">🗑️ مسح</button>
+    <button class="fi-btn-print" onclick="printFillable('F-08')">🖨️ طباعة</button>
+  </div>
+
+  <div class="fp-title">بطاقة نشاط النادي</div>
+
+  <div class="fp-header">
+    <div class="fp-hrow">
+      <span class="fp-hlabel">الأكاديمية :</span>${inp('academy','...')}
+      <span class="fp-hlabel">المديرية الإقليمية :</span>${inp('direction','...')}
+    </div>
+    <div class="fp-hrow">
+      <span class="fp-hlabel">المؤسسة :</span>${inp('institution','...')}
+      <span class="fp-hlabel">النادي :</span>${inp('club','...')}
+    </div>
+    <div class="fp-hrow" style="justify-content:center;">
+      <span class="fp-hlabel">الموسم الدراسي :</span>
+      ${inp('year','2024 / 2025','style="text-align:center; max-width:140px;"')}
+    </div>
+  </div>
+
+  <div class="fi-field-row">
+    <span class="fp-star-key">* رقم النشاط :</span>
+    ${inp('num','كما هو وارد في برنامج العمل')}
+  </div>
+  <div class="fi-field-row">
+    <span class="fp-star-key">* موضوعه :</span>
+    ${inp('subject','...')}
+  </div>
+  <div class="fi-field-col">
+    <span class="fp-star-key">* أهدافه :</span>
+    <textarea class="fi-textarea" data-fkey="goals" rows="3" placeholder="اكتب أهداف النشاط — سطر لكل هدف"></textarea>
+  </div>
+  <div class="fi-field-row">
+    <span class="fp-star-key">* الفئات المستفيدة :</span>
+    ${inp('beneficiaries','...')}
+  </div>
+
+  <table class="fp-table fi-table" style="margin-top:.7rem;">
+    <thead>
+      <tr>
+        <th>العمليات المبرمجة</th>
+        <th>فترات الإنجاز</th>
+        <th>الوسائل المعينة</th>
+        <th>المسؤولون عن الإنجاز</th>
+        <th>المتدخلون</th>
+        <th>التمويل</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${[1,2,3,4,5].map(r =>
+        `<tr>${[0,1,2,3,4,5].map(c =>
+          `<td>${cell('t'+r+'c'+c)}</td>`
+        ).join('')}</tr>`
+      ).join('')}
+    </tbody>
+  </table>
+
+  <div style="margin-top:1rem; font-weight:700; font-size:.82rem; text-align:center; border-bottom:1px solid #ccc; padding-bottom:.3rem;">— الصفحة الثانية —</div>
+
+  <div class="fp-eval-grid" style="margin-top:.5rem;">
+    <div style="border-left:1px solid #333;">
+      <div class="fp-eval-head">النتائج المحققة</div>
+      <div class="fp-eval-body" style="padding:.4rem;">
+        <textarea class="fi-textarea fi-textarea-full" data-fkey="results" rows="9" placeholder="النتائج المحققة…"></textarea>
+      </div>
+    </div>
+    <div>
+      <div class="fp-eval-head">تقويم النشاط</div>
+      <div class="fp-eval-body" style="padding:.4rem;">
+        <textarea class="fi-textarea fi-textarea-full" data-fkey="evaluation" rows="9" placeholder="تقويم النشاط…"></textarea>
+      </div>
+    </div>
+  </div>
+
+</div>`;
+}
+
+function bindFillableInputs(ficheId) {
+  let debounce;
+  const save = () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => saveFillable(ficheId), 700);
+  };
+  document.querySelectorAll('[data-fkey]').forEach(el => {
+    el.addEventListener('input', save);
+  });
+}
+
+function saveFillable(ficheId) {
+  const data = {};
+  document.querySelectorAll('[data-fkey]').forEach(el => {
+    data[el.dataset.fkey] = el.isContentEditable ? el.textContent : el.value;
+  });
+  localStorage.setItem('fill-' + ficheId, JSON.stringify(data));
+}
+
+function loadFillable(ficheId) {
+  const raw = localStorage.getItem('fill-' + ficheId);
+  if (!raw) return;
+  const data = JSON.parse(raw);
+  document.querySelectorAll('[data-fkey]').forEach(el => {
+    const val = data[el.dataset.fkey];
+    if (val === undefined) return;
+    if (el.isContentEditable) el.textContent = val;
+    else el.value = val;
+  });
+}
+
+function clearFillable(ficheId) {
+  if (!confirm('مسح جميع البيانات المحفوظة لهذا النموذج؟')) return;
+  localStorage.removeItem('fill-' + ficheId);
+  document.querySelectorAll('[data-fkey]').forEach(el => {
+    if (el.isContentEditable) el.textContent = '';
+    else el.value = '';
+  });
+}
+
+function printFillable(ficheId) {
+  // Clone the fillable node, serialize input values into spans, then print
+  const src = document.getElementById('fiche-fill-' + ficheId);
+  if (!src) return;
+  const clone = src.cloneNode(true);
+
+  // Replace inputs with value spans
+  clone.querySelectorAll('input[data-fkey]').forEach(el => {
+    const span = document.createElement('span');
+    span.className = 'fi-print-val';
+    span.textContent = el.value || '';
+    el.replaceWith(span);
+  });
+  // Replace textareas with pre-formatted divs
+  clone.querySelectorAll('textarea[data-fkey]').forEach(el => {
+    const div = document.createElement('div');
+    div.className = 'fi-print-val fi-print-block';
+    div.textContent = el.value || '';
+    el.replaceWith(div);
+  });
+  // Remove contenteditable from cells
+  clone.querySelectorAll('[contenteditable]').forEach(el => {
+    el.removeAttribute('contenteditable');
+  });
+  // Remove toolbar
+  const tb = clone.querySelector('.fi-toolbar');
+  if (tb) tb.remove();
+
+  const area = document.getElementById('print-area');
+  area.innerHTML = `<div style="font-family:'IBM Plex Sans Arabic',Arial,sans-serif; direction:rtl; padding:1cm;">${clone.outerHTML}</div>`;
+  document.body.classList.add('printing-fiche');
+  window.print();
+  setTimeout(() => {
+    document.body.classList.remove('printing-fiche');
+    area.innerHTML = '';
+  }, 1000);
+}
 
 /* ── Search ──────────────────────────────────────────── */
 function openSearch() {

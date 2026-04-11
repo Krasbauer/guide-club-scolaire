@@ -236,7 +236,7 @@ window.FICHES = [
     id: 'F-08', group: 'blue', groupLabel: 'التنفيذ',
     num: 'ن-08', title: 'بطاقة نشاط النادي',
     desc: 'توثيق إعداد وتنفيذ وتقويم نشاط واحد (صفحتان)',
-    step: 'step-9', pdfPage: 21,
+    step: 'step-9', pdfPage: 21, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">بطاقة نشاط النادي</div>
   ${hdr()}

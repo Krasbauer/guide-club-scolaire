@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/main.css?v=3">
+  <link rel="stylesheet" href="css/main.css?v=4">
 </head>
 <body>
 
@@ -19,7 +19,7 @@
   <!-- Top bar -->
   <header class="top-bar">
     <span class="top-bar-title" id="top-bar-title">Guide Club Scolaire</span>
-    <span id="app-version" style="font-size:.65rem; opacity:.6; margin-inline-start:auto; padding-inline-end:.5rem; white-space:nowrap;">v0.8</span>
+    <span id="app-version" style="font-size:.65rem; opacity:.6; margin-inline-start:auto; padding-inline-end:.5rem; white-space:nowrap;">v0.9</span>
     <button class="btn-search-top" onclick="openSearch()" aria-label="بحث">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     </button>
@@ -82,6 +82,7 @@
       <button class="modal-close" onclick="closeFicheModal()">✕</button>
     </div>
     <div class="modal-actions no-print">
+      <button class="btn btn-fill" id="modal-fill-btn" style="display:none;" onclick="toggleFillMode()">✏️ ملء النموذج</button>
       <a class="btn btn-docx" id="modal-docx-btn" href="#" download>📝 تحميل DOCX</a>
       <a class="btn btn-pdf" id="modal-pdf-btn" href="#" target="_blank">📥 PDF الرسمي</a>
     </div>
