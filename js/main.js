@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindNav();
   bindFacilitator();
   bindBackButton();
+  bindSearch();
 
   // Restore section from URL hash on load, else default to home
   const initial = SECTIONS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home';
@@ -1111,6 +1112,125 @@ const FACILITATOR_SLIDES = [
     tip: 'للحفظ: "أسَّس ↔ خطَّط ↔ نفَّذ ↔ قيَّم" — كل حلقة لها بطاقة. الدورة تتكرر كل سنة.',
   },
 ];
+
+/* ── Search ──────────────────────────────────────────── */
+function openSearch() {
+  document.getElementById('search-overlay').classList.add('open');
+  document.getElementById('search-input').focus();
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('open');
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-results').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+function stripHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+}
+
+function runSearch(query) {
+  const q = query.trim().toLowerCase();
+  const results = document.getElementById('search-results');
+
+  if (q.length < 2) {
+    results.innerHTML = '';
+    return;
+  }
+
+  const hits = [];
+
+  // Search fiches
+  (window.FICHES || []).forEach(f => {
+    const text = (f.title + ' ' + (f.pills || []).join(' ') + ' ' + stripHtml(f.body || '')).toLowerCase();
+    if (text.includes(q)) {
+      hits.push({
+        section: 'fiches',
+        sectionLabel: 'البطاقات',
+        icon: '📋',
+        title: f.title,
+        sub: (f.pills || []).join(' · '),
+        action: () => { closeSearch(); openFiche(f.id); },
+      });
+    }
+  });
+
+  // Search parcours
+  (window.PARCOURS || []).forEach(s => {
+    const text = (s.title + ' ' + (s.goal || '') + ' ' + (s.actions || []).join(' ') + ' ' + (s.why || '')).toLowerCase();
+    if (text.includes(q)) {
+      hits.push({
+        section: 'parcours',
+        sectionLabel: 'المسار',
+        icon: '🗺️',
+        title: 'الخطوة ' + s.num + ' — ' + s.title,
+        sub: s.goal || '',
+        action: () => { closeSearch(); navigateTo('parcours'); },
+      });
+    }
+  });
+
+  // Search legal
+  (window.LEGAL || []).forEach(l => {
+    const text = (l.title + ' ' + (l.subtitle || '') + ' ' + (l.context || '') + ' ' + (l.keyArticles || []).join(' ') + ' ' + (l.relevance || '')).toLowerCase();
+    if (text.includes(q)) {
+      hits.push({
+        section: 'legal',
+        sectionLabel: 'القانون',
+        icon: '⚖️',
+        title: l.title,
+        sub: l.subtitle || '',
+        action: () => { closeSearch(); navigateTo('legal'); },
+      });
+    }
+  });
+
+  if (hits.length === 0) {
+    results.innerHTML = `<div class="search-empty">لا نتائج لـ "<strong>${query}</strong>"</div>`;
+    return;
+  }
+
+  results.innerHTML = hits.map((h, i) => `
+    <div class="search-result-item" data-idx="${i}">
+      <span class="search-result-icon">${h.icon}</span>
+      <div class="search-result-body">
+        <div class="search-result-title">${h.title}</div>
+        ${h.sub ? `<div class="search-result-sub">${h.sub}</div>` : ''}
+      </div>
+      <span class="search-result-badge">${h.sectionLabel}</span>
+    </div>
+  `).join('');
+
+  // Bind clicks after rendering
+  results.querySelectorAll('.search-result-item').forEach((el, i) => {
+    el.addEventListener('click', () => hits[i].action());
+  });
+}
+
+function bindSearch() {
+  const input = document.getElementById('search-input');
+  let debounce;
+  input.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => runSearch(input.value), 200);
+  });
+
+  // Close on overlay background click
+  document.getElementById('search-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('search-overlay')) closeSearch();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('search-overlay').classList.contains('open')) {
+      closeSearch();
+    }
+  });
+}
 
 function bindFacilitator() {
   // Close button
