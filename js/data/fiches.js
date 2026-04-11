@@ -181,7 +181,7 @@ window.FICHES = [
   {
     id: 'F-06', group: 'gold', groupLabel: 'التخطيط',
     num: 'ن-06', title: 'نموذج برمجة سنوية لأنشطة النادي',
-    desc: 'جدول زمني Gantt: الأنشطة × الأشهر (نونبر → يونيو)',
+    desc: 'جدول زمني Gantt: الأنشطة × الأشهر (أكتوبر → شتنبر) — 12 شهراً',
     step: 'step-8', pdfPage: 17,
     html: `<div class="fiche-preview">
   <div class="fp-title">نموذج لبرمجة سنوية لأنشطة النادي</div>

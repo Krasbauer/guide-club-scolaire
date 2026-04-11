@@ -1,32 +1,37 @@
 """
-generate_docx.py
-Génère les 11 fiches des Clubs Scolaires en .docx éditables.
-Exécuter : python3 generate_docx.py
+generate_docx.py — FIDÈLE AUX ORIGINAUX v2
+Reproduit exactement les 11 fiches officielles du Guide de la Vie Scolaire 2019.
+Structure identique au HTML preview et aux PDFs officiels.
 """
+import os, sys, io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
-import os
 from docx import Document
-from docx.shared import Pt, Cm, RGBColor, Inches
+from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-import copy
 
 OUTPUT_DIR = 'fiches-docx'
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-GREEN = RGBColor(0x2d, 0x6a, 0x4f)
-GREEN_BG = RGBColor(0xc8, 0xe8, 0xbc)
-LIGHT_GREY = RGBColor(0xe8, 0xe8, 0xe8)
-WHITE = RGBColor(0xff, 0xff, 0xff)
+# ── Colours ───────────────────────────────────────────────
+GREEN_BG = 'c8e8bc'
+GREY_BG  = 'e8e8e8'
+LIGHT_BG = 'f3f3f3'
+GREEN_RGB = RGBColor(0x2d, 0x6a, 0x4f)
+GREY_RGB  = RGBColor(0x55, 0x55, 0x55)
 
-def set_rtl(paragraph):
-    pPr = paragraph._p.get_or_add_pPr()
-    bidi = OxmlElement('w:bidi')
-    pPr.append(bidi)
+DOTS_S = '. . . . . . . . . . . . . . . . . . . . . . .'
+DOTS_L = '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .'
 
-def set_cell_bg(cell, hex_color):
+# ── Low-level helpers ─────────────────────────────────────
+def rtl(para):
+    pPr = para._p.get_or_add_pPr()
+    pPr.append(OxmlElement('w:bidi'))
+
+def cell_bg(cell, hex_color):
     tcPr = cell._tc.get_or_add_tcPr()
     shd = OxmlElement('w:shd')
     shd.set(qn('w:val'), 'clear')
@@ -34,420 +39,579 @@ def set_cell_bg(cell, hex_color):
     shd.set(qn('w:fill'), hex_color)
     tcPr.append(shd)
 
-def set_cell_border(cell):
+def cell_border(cell, color='555555', sz='4'):
     tcPr = cell._tc.get_or_add_tcPr()
-    tcBorders = OxmlElement('w:tcBorders')
-    for side in ['top', 'left', 'bottom', 'right']:
-        border = OxmlElement(f'w:{side}')
-        border.set(qn('w:val'), 'single')
-        border.set(qn('w:sz'), '4')
-        border.set(qn('w:space'), '0')
-        border.set(qn('w:color'), '555555')
-        tcBorders.append(border)
-    tcPr.append(tcBorders)
+    b = OxmlElement('w:tcBorders')
+    for side in ('top','left','bottom','right'):
+        el = OxmlElement(f'w:{side}')
+        el.set(qn('w:val'), 'single')
+        el.set(qn('w:sz'), sz)
+        el.set(qn('w:space'), '0')
+        el.set(qn('w:color'), color)
+        b.append(el)
+    tcPr.append(b)
 
-def new_doc(title):
+def no_border(cell):
+    tcPr = cell._tc.get_or_add_tcPr()
+    b = OxmlElement('w:tcBorders')
+    for side in ('top','left','bottom','right'):
+        el = OxmlElement(f'w:{side}')
+        el.set(qn('w:val'), 'none')
+        el.set(qn('w:sz'), '0')
+        el.set(qn('w:space'), '0')
+        el.set(qn('w:color'), 'auto')
+        b.append(el)
+    tcPr.append(b)
+
+def row_height(row, cm):
+    trPr = row._tr.get_or_add_trPr()
+    h = OxmlElement('w:trHeight')
+    h.set(qn('w:val'), str(int(cm * 567)))
+    trPr.append(h)
+
+def col_width(table, col_idx, cm):
+    for row in table.rows:
+        tc = row.cells[col_idx]._tc
+        tcPr = tc.get_or_add_tcPr()
+        w = OxmlElement('w:tcW')
+        w.set(qn('w:w'), str(int(cm * 567)))
+        w.set(qn('w:type'), 'dxa')
+        tcPr.append(w)
+
+def set_landscape(doc):
+    """Set all sections to landscape A4."""
+    for sec in doc.sections:
+        sec.orientation = 1          # WD_ORIENT.LANDSCAPE = 1
+        sec.page_width, sec.page_height = sec.page_height, sec.page_width
+
+# ── Doc factory ───────────────────────────────────────────
+def new_doc():
     doc = Document()
-    # Page margins
-    for section in doc.sections:
-        section.top_margin = Cm(1.5)
-        section.bottom_margin = Cm(1.5)
-        section.left_margin = Cm(2)
-        section.right_margin = Cm(2)
-    # Default font
+    for sec in doc.sections:
+        sec.top_margin    = Cm(1.5)
+        sec.bottom_margin = Cm(1.5)
+        sec.left_margin   = Cm(2)
+        sec.right_margin  = Cm(2)
     doc.styles['Normal'].font.name = 'Arial'
-    doc.styles['Normal'].font.size = Pt(11)
-    # RTL document-level
-    doc.settings.element.append(OxmlElement('w:bidi'))
+    doc.styles['Normal'].font.size = Pt(10)
     return doc
 
-def add_header(doc, num, title, subtitle=None):
-    # Green title bar
+# ── Shared components ─────────────────────────────────────
+def title_bar(doc, text):
+    """Green title bar — fp-title"""
     tbl = doc.add_table(rows=1, cols=1)
     tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    cell = tbl.cell(0, 0)
-    set_cell_bg(cell, 'c8e8bc')
-    p = cell.paragraphs[0]
+    c = tbl.cell(0,0)
+    cell_bg(c, GREEN_BG)
+    cell_border(c, '333333', '6')
+    p = c.paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    set_rtl(p)
-    run = p.add_run(f'  {num} — {title}  ')
+    rtl(p)
+    run = p.add_run(text)
     run.bold = True
-    run.font.size = Pt(13)
-    run.font.color.rgb = RGBColor(0x1a, 0x2b, 0x22)
-    if subtitle:
-        doc.add_paragraph()
-        sub = doc.add_paragraph(subtitle)
-        sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        set_rtl(sub)
-        sub.runs[0].font.size = Pt(10)
-        sub.runs[0].font.color.rgb = RGBColor(0x55, 0x55, 0x55)
-    doc.add_paragraph()
+    run.font.size = Pt(12)
 
-def add_field_row(doc, label, lines=1):
-    p = doc.add_paragraph()
-    set_rtl(p)
-    run = p.add_run(f'{label}: ')
-    run.bold = True
-    run.font.size = Pt(11)
-    p.add_run('_' * 50)
-    if lines > 1:
-        for _ in range(lines - 1):
-            p2 = doc.add_paragraph('_' * 70)
-            set_rtl(p2)
-
-def add_table_with_headers(doc, headers, rows=5, col_widths=None):
-    tbl = doc.add_table(rows=rows+1, cols=len(headers))
-    tbl.style = 'Table Grid'
+def official_header(doc, has_club=True, extra=None):
+    """
+    Official header block:
+    Row 0: الأكاديمية | ....  | المديرية الإقليمية | ....
+    Row 1: المؤسسة   | ....  | النادي (opt)        | ....
+    [extra]: label1  | ....  | label2              | ....
+    Last:   الموسم الدراسي (centered, full width)
+    """
+    n_extra = 1 if extra else 0
+    n_rows  = 2 + n_extra + 1
+    tbl = doc.add_table(rows=n_rows, cols=4)
     tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    # Header row
+    for row in tbl.rows:
+        for c in row.cells:
+            no_border(c)
+
+    def lbl(cell, text):
+        p = cell.paragraphs[0]; rtl(p)
+        r = p.add_run(text); r.bold = True; r.font.size = Pt(9.5)
+
+    def dots(cell):
+        p = cell.paragraphs[0]; rtl(p)
+        r = p.add_run('. . . . . . . . . . . . . . . . . . . . .')
+        r.font.size = Pt(9); r.font.color.rgb = GREY_RGB
+
+    lbl(tbl.rows[0].cells[0], 'الأكاديميـة :')
+    dots(tbl.rows[0].cells[1])
+    lbl(tbl.rows[0].cells[2], 'المديرية الإقليمية :')
+    dots(tbl.rows[0].cells[3])
+
+    lbl(tbl.rows[1].cells[0], 'المؤسسـة :')
+    dots(tbl.rows[1].cells[1])
+    if has_club:
+        lbl(tbl.rows[1].cells[2], 'النـادي :')
+        dots(tbl.rows[1].cells[3])
+
+    ri = 2
+    if extra:
+        lbl(tbl.rows[ri].cells[0], extra[0] + ' :')
+        dots(tbl.rows[ri].cells[1])
+        lbl(tbl.rows[ri].cells[2], extra[1] + ' :')
+        dots(tbl.rows[ri].cells[3])
+        ri += 1
+
+    # موسم دراسي — merged full width
+    merged = tbl.rows[ri].cells[0].merge(tbl.rows[ri].cells[3])
+    p = merged.paragraphs[0]
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER; rtl(p)
+    run = p.add_run('الموسم الدراسي :  . . . . . . . .  /  . . . . . . . .')
+    run.bold = True; run.font.size = Pt(10)
+
+def section_heading(doc, num, text, note=None):
+    """Numbered section heading — fp-sh"""
+    p = doc.add_paragraph(); rtl(p)
+    r = p.add_run(f'{num} {text}'); r.bold = True; r.font.size = Pt(10)
+    if note:
+        r2 = p.add_run(f'  ({note})'); r2.font.size = Pt(8.5); r2.font.color.rgb = GREY_RGB
+
+def dot_lines(doc, n=3):
+    for _ in range(n):
+        p = doc.add_paragraph(DOTS_L); rtl(p)
+        p.runs[0].font.size = Pt(9); p.runs[0].font.color.rgb = GREY_RGB
+
+def ph_run(para, text):
+    """Green placeholder run"""
+    r = para.add_run(text); r.font.color.rgb = GREEN_RGB; return r
+
+def h_row(tbl, headers, fs=9):
+    """Fill header row of table"""
     for i, h in enumerate(headers):
-        cell = tbl.cell(0, i)
-        set_cell_bg(cell, 'e8e8e8')
-        p = cell.paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        set_rtl(p)
-        run = p.add_run(h)
-        run.bold = True
-        run.font.size = Pt(10)
-    # Data rows
-    for r in range(1, rows+1):
-        for c in range(len(headers)):
-            cell = tbl.cell(r, c)
-            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    doc.add_paragraph()
+        c = tbl.rows[0].cells[i]
+        cell_bg(c, GREY_BG); cell_border(c)
+        p = c.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER; rtl(p)
+        r = p.add_run(h); r.bold = True; r.font.size = Pt(fs)
+
+def empty_rows(tbl, start=1, h_cm=0.8):
+    for ri in range(start, len(tbl.rows)):
+        row_height(tbl.rows[ri], h_cm)
+        for ci in range(len(tbl.rows[ri].cells)):
+            cell_border(tbl.rows[ri].cells[ci])
+
+def make_table(doc, headers, n_rows, h_cm=0.8, fs=9):
+    tbl = doc.add_table(rows=n_rows+1, cols=len(headers))
+    tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl.style = 'Table Grid'
+    h_row(tbl, headers, fs)
+    empty_rows(tbl, 1, h_cm)
     return tbl
 
-def add_section_title(doc, title):
-    p = doc.add_paragraph()
-    set_rtl(p)
-    run = p.add_run(f'◆  {title}')
-    run.bold = True
-    run.font.size = Pt(11)
-    run.font.color.rgb = GREEN
+def rlabel_cell(cell, text, fs=9):
+    cell_bg(cell, LIGHT_BG); cell_border(cell)
+    p = cell.paragraphs[0]; rtl(p)
+    p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    r = p.add_run(text); r.bold = True; r.font.size = Pt(fs)
 
-def add_dotted_line(doc, label, count=3):
-    for _ in range(count):
-        p = doc.add_paragraph()
-        set_rtl(p)
-        p.add_run(f'{label}: ').bold = True
-        p.add_run('· ' * 35)
+def empty_cell(cell, h_cm=0.8):
+    cell_border(cell)
+    # height set at row level
 
-# ─────────────────────────────────────────────
-# F-01 — إعلان العزم على التأسيس
-# ─────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════
+# F-01 — إعلان العزم على تأسيس النادي
+# ═══════════════════════════════════════════════════════════
 def f01():
-    doc = new_doc('F-01')
-    add_header(doc, 'F-01', 'إعلان العزم على تأسيس نادٍ تربوي')
-
-    p = doc.add_paragraph()
-    set_rtl(p)
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run('إعلان')
-    run.bold = True
-    run.font.size = Pt(14)
-    run.font.color.rgb = GREEN
+    doc = new_doc()
+    title_bar(doc, 'نموذج إعلان العزم على تأسيس النادي')
+    doc.add_paragraph()
+    official_header(doc)
     doc.add_paragraph()
 
-    intro = doc.add_paragraph()
-    set_rtl(intro)
-    intro.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    intro.add_run(
-        'نحن مجموعة من تلميذات وتلاميذ مؤسسة '
+    # إعلان pill
+    p = doc.add_paragraph(); rtl(p); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run('إعـــــلان'); r.bold = True; r.font.size = Pt(14); r.font.color.rgb = GREEN_RGB
+    doc.add_paragraph()
+
+    # Body paragraph 1
+    p1 = doc.add_paragraph(); rtl(p1); p1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p1.add_run(
+        'في إطار تنويع أنشطة الحياة المدرسية بالمؤسسة، وبغية إتاحة الفرصة للتلاميذ قصد إبراز مواهبهم، وصقل مهاراتهم، ودعم تعلماتهم، في جو تربوي يسوده التعاون والتنافس الشريف، ويشجع المبادرة والاجتهاد، تعـلـن إدارة المؤسسة إلى عموم التلاميذ والأطر الإدارية والتربوية بالمؤسسة أنها تعتزم بتنسيق مع المجلس التربوي ومجلس التدبير إحداث نادٍ تربوي في مجال '
     )
-    r2 = intro.add_run('___________________________')
-    r2.underline = True
-    intro.add_run(' نعلن عزمنا على تأسيس ')
-    r3 = intro.add_run('___________________________')
-    r3.underline = True
-    intro.add_run(
-        ' ونلتزم بالعمل المشترك في إطار الأهداف التربوية للمؤسسة.'
+    ph_run(p1, '(يحدد المجال)')
+    p1.add_run(
+        '. فعلى أعضاء هيئة التدريس والإدارة الراغبين في تأطير هذا النادي، والتلاميذ الراغبين في الانخراط فيه، تقديم طلباتهم إلى إدارة المؤسسة قبل يوم '
     )
+    ph_run(p1, '(يحدد اليوم)')
+    p1.add_run(' في الساعة ')
+    ph_run(p1, '(تحدد الساعة)')
+    p1.add_run(' كآخر أجل لتلقي الطلبات، علما أن الإدارة تضع رهن إشارتهم كافة المعلومات الضرورية حول هذا الموضوع.')
     doc.add_paragraph()
 
-    add_field_row(doc, 'اسم النادي المقترح')
-    add_field_row(doc, 'المجال')
-    add_field_row(doc, 'الفئة المستهدفة')
-    add_field_row(doc, 'الأهداف المرجوة', lines=2)
+    # Body paragraph 2
+    p2 = doc.add_paragraph(); rtl(p2); p2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p2.add_run('هذا وسينعقد الجمع العام التأسيسي يوم ')
+    ph_run(p2, '(يحدد اليوم)')
+    p2.add_run(' على الساعة ')
+    ph_run(p2, '(تحدد الساعة)')
+    p2.add_run(' بـ ')
+    ph_run(p2, '(يحدد مكان الانعقاد)')
+    p2.add_run('.')
     doc.add_paragraph()
 
-    add_section_title(doc, 'الموقِّعون على هذا الإعلان')
-    tbl = add_table_with_headers(doc, ['الاسم الكامل', 'القسم', 'التوقيع'], rows=10)
+    p3 = doc.add_paragraph(); rtl(p3); p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r3 = p3.add_run('الإدارة'); r3.bold = True; r3.font.size = Pt(11)
 
-    doc.add_paragraph()
-    add_field_row(doc, 'تاريخ الإعلان')
-    add_field_row(doc, 'المؤطِّر المقترح')
+    doc.save(f'{OUTPUT_DIR}/F-01.docx'); print('✓ F-01.docx')
 
-    doc.save(f'{OUTPUT_DIR}/F-01.docx')
-    print('✓ F-01.docx')
 
-# ─────────────────────────────────────────────
-# F-02 — محضر الجمع العام التأسيسي
-# ─────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════
+# F-02 — محضر تأسيس النادي
+# ═══════════════════════════════════════════════════════════
 def f02():
-    doc = new_doc('F-02')
-    add_header(doc, 'F-02', 'محضر الجمع العام التأسيسي')
-
-    for lbl in ['المؤسسة', 'التاريخ', 'المكان', 'عدد الحاضرين']:
-        add_field_row(doc, lbl)
+    doc = new_doc()
+    title_bar(doc, 'نموذج محضر تأسيس النادي')
+    doc.add_paragraph()
+    official_header(doc)
     doc.add_paragraph()
 
-    add_section_title(doc, 'جدول الأعمال')
-    for item in ['التعريف بأهداف النادي وبرنامجه', 'انتخاب مكتب النادي', 'المصادقة على النظام الداخلي', 'تحديد الأنشطة الأولى']:
-        p = doc.add_paragraph(f'  •  {item}', style='List Bullet')
-        set_rtl(p)
+    p = doc.add_paragraph(); rtl(p); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run('إعـــلان'); r.bold = True; r.font.size = Pt(14); r.font.color.rgb = GREEN_RGB
     doc.add_paragraph()
 
-    add_section_title(doc, 'نتائج الانتخابات')
-    tbl = add_table_with_headers(doc,
-        ['المنصب', 'الاسم الكامل', 'القسم', 'عدد الأصوات'],
-        rows=6)
-    for i, role in enumerate(['رئيس النادي', 'نائب الرئيس', 'الكاتب', 'نائب الكاتب', 'الخازن', 'نائب الخازن'], 1):
-        tbl.cell(i, 0).paragraphs[0].text = role
-        set_rtl(tbl.cell(i, 0).paragraphs[0])
+    p1 = doc.add_paragraph(); rtl(p1); p1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p1.add_run('انعقد يوم ')
+    ph_run(p1, '(يحدد اليوم)')
+    p1.add_run(' على الساعة ')
+    ph_run(p1, '(تحدد الساعة)')
+    p1.add_run(' الجمع العام التأسيسي لنادي ')
+    ph_run(p1, '(يحدد اسم النادي)')
+    p1.add_run(' تحت إشراف ')
+    ph_run(p1, '(يحدد المشرف: الإدارة / منسق النادي...)')
+    p1.add_run(' وبحضور منخرطي النادي، بالإضافة إلى ')
+    ph_run(p1, '(تحدد نوعية الحضور وعدده إن أمكن)')
+    p1.add_run('.')
     doc.add_paragraph()
 
-    add_section_title(doc, 'ملخص المداولات')
-    for _ in range(6):
-        p = doc.add_paragraph('_' * 80)
-        set_rtl(p)
-    doc.add_paragraph()
-
-    add_section_title(doc, 'التوقيعات')
-    tbl2 = add_table_with_headers(doc, ['المنصب', 'الاسم', 'التوقيع'], rows=4)
-    for i, role in enumerate(['رئيس الجلسة', 'الكاتب', 'ممثل الإدارة', 'المؤطِّر'], 1):
-        tbl2.cell(i, 0).paragraphs[0].text = role
-        set_rtl(tbl2.cell(i, 0).paragraphs[0])
-
-    doc.save(f'{OUTPUT_DIR}/F-02.docx')
-    print('✓ F-02.docx')
-
-# ─────────────────────────────────────────────
-# F-03 — إعلان تأسيس النادي
-# ─────────────────────────────────────────────
-def f03():
-    doc = new_doc('F-03')
-    add_header(doc, 'F-03', 'إعلان تأسيس النادي التربوي')
-
-    p = doc.add_paragraph()
-    set_rtl(p)
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run('إعلان تأسيس')
-    run.bold = True
-    run.font.size = Pt(14)
-    run.font.color.rgb = GREEN
-    doc.add_paragraph()
-
-    body = doc.add_paragraph()
-    set_rtl(body)
-    body.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    body.add_run('يُسعدنا أن نُعلن عن التأسيس الرسمي لـ ')
-    r = body.add_run('___________________________')
-    r.underline = True
-    body.add_run(' بمؤسسة ')
-    r2 = body.add_run('___________________________')
-    r2.underline = True
-    body.add_run(
-        '، وذلك في إطار الأندية التربوية المنصوص عليها في المذكرة الوزارية رقم 42.'
+    p2 = doc.add_paragraph(); rtl(p2); p2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p2.add_run(
+        'وقد قدم منسق النادي في بداية اللقاء بنية النادي، وكيفية انتخاب هياكله، والتي على ضوئها قام المنخرطون بانتخاب أعضاء المكتب المسير الذين اختاروا من بينهم رئيس المكتب ومساعده، ومنسقي اللجان الوظيفية. كما تم كذلك خلال هذا الجمع تعيين مساعدي منسقي اللجان الوظيفية وتشكيل فرق العمل وتحديد منسقيها ومساعديهم.'
     )
     doc.add_paragraph()
 
-    for lbl in ['تاريخ التأسيس', 'مجال النادي', 'المؤطِّر المسؤول', 'مُنسِّق لجنة التسيير']:
-        add_field_row(doc, lbl)
+    p3 = doc.add_paragraph(); rtl(p3); p3.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p3.add_run(
+        'وقد مرت جميع هذه العمليات في جو تربوي ديموقراطي يسوده الشعور بالمسؤولية والإحساس بالانتماء الجماعي، وأفرزت الهيكلة التالية:'
+    )
     doc.add_paragraph()
 
-    add_section_title(doc, 'مكتب النادي المنتخب')
-    tbl = add_table_with_headers(doc, ['المنصب', 'الاسم الكامل', 'القسم'], rows=6)
-    for i, role in enumerate(['الرئيس', 'نائب الرئيس', 'الكاتب', 'نائب الكاتب', 'الخازن', 'نائب الخازن'], 1):
-        tbl.cell(i, 0).paragraphs[0].text = role
-        set_rtl(tbl.cell(i, 0).paragraphs[0])
+    p4 = doc.add_paragraph(); rtl(p4); p4.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    ph_run(p4, '(تحدد الهيكلة مع ذكر أسماء القائمين على مختلف الهياكل)')
+    doc.add_paragraph()
+    dot_lines(doc, 4)
     doc.add_paragraph()
 
-    add_section_title(doc, 'رسالة النادي')
-    for _ in range(4):
-        p = doc.add_paragraph('_' * 80)
-        set_rtl(p)
+    p5 = doc.add_paragraph(); rtl(p5); p5.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r5 = p5.add_run('الإدارة'); r5.bold = True; r5.font.size = Pt(11)
 
+    doc.save(f'{OUTPUT_DIR}/F-02.docx'); print('✓ F-02.docx')
+
+
+# ═══════════════════════════════════════════════════════════
+# F-03 — إعلان عن تأسيس النادي
+# ═══════════════════════════════════════════════════════════
+def f03():
+    doc = new_doc()
+    title_bar(doc, 'نموذج إعلان عن تأسيس النادي')
     doc.add_paragraph()
-    p = doc.add_paragraph()
-    set_rtl(p)
-    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    p.add_run('توقيع المؤطِّر: ___________________        توقيع مدير المؤسسة: ___________________')
+    official_header(doc)
+    doc.add_paragraph()
 
-    doc.save(f'{OUTPUT_DIR}/F-03.docx')
-    print('✓ F-03.docx')
+    p = doc.add_paragraph(); rtl(p); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run('إعـــلان'); r.bold = True; r.font.size = Pt(14); r.font.color.rgb = GREEN_RGB
+    doc.add_paragraph()
 
-# ─────────────────────────────────────────────
-# F-04 — برنامج العمل السنوي
-# ─────────────────────────────────────────────
+    p1 = doc.add_paragraph(); rtl(p1); p1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p1.add_run('تعـلـن إدارة المؤسسة إلى عموم التلاميذ والأطر الإدارية والتربوية بالمؤسسة أنه تم تأسيس نادي ')
+    ph_run(p1, '(يحدد اسم النادي)')
+    p1.add_run('، بعد انعقاد الجمع العام التأسيسي يوم ')
+    ph_run(p1, '(يحدد اليوم)')
+    p1.add_run(' في الساعة ')
+    ph_run(p1, '(تحدد الساعة)')
+    p1.add_run(' تم خلاله انتخاب مكتب النادي وتوزيع المهام بين أعضائه، وانتداب مؤطري النادي ومنسقي اللجان الوظيفية وفرق العمل.')
+    doc.add_paragraph()
+
+    p2 = doc.add_paragraph(); rtl(p2); p2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p2.add_run('هذا ويبقى باب الانخراط مفتوحاً في وجه عموم التلاميذ وهيئة التدريس والإدارة. فعلى الراغبين في الانضمام إلى النادي الاتصال مباشرة بالسيد(ة) ')
+    ph_run(p2, '(يحدد اسم المكلف(ة) بتنسيق النادي)')
+    p2.add_run('، أو بأعضاء المكتب المسير لتقديم طلباتهم.')
+    doc.add_paragraph()
+
+    p3 = doc.add_paragraph(); rtl(p3); p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r3 = p3.add_run('الإدارة'); r3.bold = True; r3.font.size = Pt(11)
+
+    doc.save(f'{OUTPUT_DIR}/F-03.docx'); print('✓ F-03.docx')
+
+
+# ═══════════════════════════════════════════════════════════
+# F-04 — نموذج برنامج عمل
+# ═══════════════════════════════════════════════════════════
 def f04():
-    doc = new_doc('F-04')
-    add_header(doc, 'F-04', 'برنامج عمل النادي التربوي — الموسم الدراسي')
-
-    for lbl in ['اسم النادي', 'المؤطِّر', 'الموسم الدراسي']:
-        add_field_row(doc, lbl)
+    doc = new_doc()
+    title_bar(doc, 'نموذج برنامج عمل')
+    doc.add_paragraph()
+    official_header(doc)
     doc.add_paragraph()
 
-    add_table_with_headers(doc,
-        ['الرقم', 'النشاط', 'الفترة الزمنية', 'المتدخلون', 'الفئة المستهدفة', 'الملاحظات'],
-        rows=12)
+    headers = ['رت\n(*)', 'موضوع النشاط\n(**)', 'فترة الإنجاز', 'المتدخلون', 'الفئات المستهدفة', 'ملاحظات']
+    tbl = doc.add_table(rows=8, cols=6)
+    tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl.style = 'Table Grid'
+    h_row(tbl, headers, 9)
+
+    # Rows 1-6: numbered; row 7: "..."
+    nums = ['1','2','3','4','5','6','...']
+    for ri, n in enumerate(nums, 1):
+        row_height(tbl.rows[ri], 0.85)
+        c = tbl.rows[ri].cells[0]; cell_bg(c, LIGHT_BG); cell_border(c)
+        p = c.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER; rtl(p)
+        p.add_run(n).font.size = Pt(9)
+        for ci in range(1, 6):
+            cell_border(tbl.rows[ri].cells[ci])
 
     doc.add_paragraph()
-    p = doc.add_paragraph()
-    set_rtl(p)
-    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    p.add_run('توقيع المؤطِّر: ___________________        توقيع الرئيس: ___________________')
+    n1 = doc.add_paragraph(); rtl(n1)
+    n1.add_run('(*) : ').bold = True
+    n1.add_run('الرقم الترتيبي للنشاط').font.size = Pt(9)
+    n2 = doc.add_paragraph(); rtl(n2)
+    n2.add_run('(**) : ').bold = True
+    n2.add_run('يحدد الموضوع العام للنشاط دون تحديد التفاصيل المرتبطة به، على اعتبار أن هناك بطاقة تفصيلية للنشاط.').font.size = Pt(9)
 
-    doc.save(f'{OUTPUT_DIR}/F-04.docx')
-    print('✓ F-04.docx')
+    doc.save(f'{OUTPUT_DIR}/F-04.docx'); print('✓ F-04.docx')
 
-# ─────────────────────────────────────────────
-# F-05 — خطة العمل بالأهداف
-# ─────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════
+# F-05 — نموذج خطة عمل
+# ═══════════════════════════════════════════════════════════
 def f05():
-    doc = new_doc('F-05')
-    add_header(doc, 'F-05', 'خطة عمل النادي التربوي بالأهداف')
-
-    for lbl in ['اسم النادي', 'المؤطِّر', 'الموسم الدراسي']:
-        add_field_row(doc, lbl)
+    doc = new_doc()
+    title_bar(doc, 'نموذج خطة عمل')
+    doc.add_paragraph()
+    official_header(doc)
     doc.add_paragraph()
 
-    add_table_with_headers(doc,
-        ['الأهداف العامة أو النتائج المنتظرة', 'محاور الأنشطة', 'موقت كل محور', 'أجل الإنجاز'],
-        rows=8)
+    headers = ['الأهداف العامة\nأو النتائج المنتظرة', 'محاور الأنشطة', 'موقت كل محور', 'أجل الإنجاز']
+    make_table(doc, headers, n_rows=6, h_cm=1.0)
 
-    doc.save(f'{OUTPUT_DIR}/F-05.docx')
-    print('✓ F-05.docx')
+    doc.save(f'{OUTPUT_DIR}/F-05.docx'); print('✓ F-05.docx')
 
-# ─────────────────────────────────────────────
-# F-06 — البرمجة الزمنية السنوية (Gantt)
-# ─────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════
+# F-06 — نموذج برمجة سنوية (Gantt 12 mois) — LANDSCAPE
+# ═══════════════════════════════════════════════════════════
 def f06():
-    doc = new_doc('F-06')
-    add_header(doc, 'F-06', 'البرمجة الزمنية السنوية للأنشطة (أكتوبر → شتنبر)')
+    doc = new_doc()
+    set_landscape(doc)
+    # Adjust margins for landscape
+    for sec in doc.sections:
+        sec.top_margin = Cm(1.2); sec.bottom_margin = Cm(1.2)
+        sec.left_margin = Cm(1.5); sec.right_margin = Cm(1.5)
 
-    for lbl in ['اسم النادي', 'المؤطِّر', 'الموسم الدراسي']:
-        add_field_row(doc, lbl)
+    title_bar(doc, 'نموذج لبرمجة سنوية لأنشطة النادي')
+    doc.add_paragraph()
+    official_header(doc)
     doc.add_paragraph()
 
-    months = ['أكتوبر', 'نونبر', 'دجنبر', 'يناير', 'فبراير', 'مارس', 'أبريل', 'ماي', 'يونيو', 'يوليوز', 'غشت', 'شتنبر']
-    headers = ['النشاط'] + months + ['ملاحظات']
-    add_table_with_headers(doc, headers, rows=10)
+    months = ['أكتوبر','نونبر','دجنبر','يناير','فبراير','مارس','أبريل','ماي','يونيو','يوليوز','غشت','شتنبر']
+    headers = ['الأنشطة'] + months
+    n_cols = len(headers)  # 13
 
-    p = doc.add_paragraph()
-    set_rtl(p)
-    p.add_run('ملاحظة: ضع علامة ').italic = True
-    p.add_run('✓').bold = True
-    run = p.add_run(' في الخانة المناسبة لكل شهر.')
-    run.italic = True
+    tbl = doc.add_table(rows=12, cols=n_cols)
+    tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl.style = 'Table Grid'
+    h_row(tbl, headers, 8)
 
-    doc.save(f'{OUTPUT_DIR}/F-06.docx')
-    print('✓ F-06.docx')
+    # Activity rows 1-10, then "النشاط......"
+    labels = [f'النشاط {i}' for i in range(1,11)] + ['النشاط ......']
+    for ri, lbl in enumerate(labels, 1):
+        row_height(tbl.rows[ri], 0.75)
+        rlabel_cell(tbl.rows[ri].cells[0], lbl, 8)
+        for ci in range(1, n_cols):
+            cell_border(tbl.rows[ri].cells[ci])
 
-# ─────────────────────────────────────────────
+    doc.add_paragraph()
+    note = doc.add_paragraph(); rtl(note)
+    note.add_run('ملاحظة: ').bold = True
+    note.add_run('عُبِّئت هذه الجدولة من باب التمثيل فقط، فلا ينبغي التقيد بها من طرف الأندية.').font.size = Pt(9)
+
+    doc.save(f'{OUTPUT_DIR}/F-06.docx'); print('✓ F-06.docx')
+
+
+# ═══════════════════════════════════════════════════════════
 # F-07 — بطاقة عناصر مشروع النادي
-# ─────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════
 def f07():
-    doc = new_doc('F-07')
-    add_header(doc, 'F-07', 'بطاقة عناصر مشروع النادي التربوي')
-
-    for lbl in ['اسم النادي', 'المؤسسة', 'الموسم الدراسي', 'المؤطِّر']:
-        add_field_row(doc, lbl)
+    doc = new_doc()
+    title_bar(doc, 'بطاقة عناصر مشروع النادي')
+    doc.add_paragraph()
+    official_header(doc)
     doc.add_paragraph()
 
     sections = [
-        ('1. رسالة النادي وأهدافه العامة', 3),
-        ('2. الأهداف الخاصة (قابلة للقياس)', 3),
-        ('3. الأنشطة المنتظرة', 3),
-        ('4. الفئات المستفيدة', 2),
-        ('5. المتدخلون والشركاء', 2),
-        ('6. الوسائل المادية والبشرية المتاحة', 2),
-        ('7. آليات التطوير والاستشارة', 2),
-        ('8. التمويل والمصادر', 2),
+        ('.1', 'الأهداف العامة للنادي وأولوياته:'),
+        ('.2', 'الأنشطة المزمع إنجازها:'),
+        ('.3', 'النتائج المنتظرة من الأنشطة:'),
+        ('.4', 'الفئات المستفيدة من الأنشطة:'),
+        ('.5', 'المتدخلون ونوع إسهامهم:'),
+        ('.6', 'الوسائل والموارد الواجب تعبئتها:'),
+        ('.7', 'آليات التطوير والاستشارة:'),
+        ('.8', 'التمويل والمصادر:'),
     ]
-    for title, lines in sections:
-        add_section_title(doc, title)
-        add_dotted_line(doc, '', count=lines)
+    for num, text in sections:
+        p = doc.add_paragraph(); rtl(p)
+        r = p.add_run(f'{num} {text}'); r.bold = True; r.font.size = Pt(10)
+        dot_lines(doc, 3)
         doc.add_paragraph()
 
-    doc.save(f'{OUTPUT_DIR}/F-07.docx')
-    print('✓ F-07.docx')
+    doc.save(f'{OUTPUT_DIR}/F-07.docx'); print('✓ F-07.docx')
 
-# ─────────────────────────────────────────────
-# F-08 — بطاقة وصف نشاط
-# ─────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════
+# F-08 — بطاقة نشاط النادي  (2 pages)
+# ═══════════════════════════════════════════════════════════
 def f08():
-    doc = new_doc('F-08')
-    add_header(doc, 'F-08', 'بطاقة وصف نشاط النادي التربوي')
-
-    for lbl in ['اسم النادي', 'عنوان النشاط', 'التاريخ', 'المدة', 'المكان', 'المسؤول عن التنسيق']:
-        add_field_row(doc, lbl)
+    doc = new_doc()
+    title_bar(doc, 'بطاقة نشاط النادي')
+    doc.add_paragraph()
+    official_header(doc)
     doc.add_paragraph()
 
-    add_section_title(doc, 'الأهداف التعلمية للنشاط')
-    add_dotted_line(doc, '', count=3)
+    # Star fields
+    def star_field(label, lines=1):
+        p = doc.add_paragraph(); rtl(p)
+        r = p.add_run(f'* {label} :  '); r.bold = True; r.font.size = Pt(10)
+        p.add_run(DOTS_S)
+        for _ in range(lines - 1):
+            p2 = doc.add_paragraph(DOTS_L); rtl(p2)
+            p2.runs[0].font.size = Pt(9); p2.runs[0].font.color.rgb = GREY_RGB
+
+    star_field('رقم النشاط', 1)
+    star_field('موضوعه', 1)
+    star_field('أهدافه', 3)
+    star_field('الفئات المستفيدة', 1)
     doc.add_paragraph()
 
-    add_section_title(doc, 'برنامج سير النشاط')
-    add_table_with_headers(doc,
-        ['التوقيت', 'المرحلة', 'المحتوى', 'الأدوات', 'المسؤول', 'الملاحظات'],
-        rows=8)
+    # Planning table
+    headers8 = ['العمليات المبرمجة','فترات الإنجاز','الوسائل المعينة','المسؤولون عن الإنجاز','المتدخلون','التمويل']
+    make_table(doc, headers8, n_rows=5, h_cm=1.0)
 
-    add_section_title(doc, 'تقييم النشاط')
-    tbl = add_table_with_headers(doc,
-        ['عدد المشاركين', 'نسبة الإنجاز', 'الصعوبات', 'المقترحات'],
-        rows=2)
+    # Page 2 separator
+    doc.add_paragraph()
+    sep = doc.add_paragraph(); rtl(sep); sep.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = sep.add_run('— الصفحة الثانية —'); r.bold = True; r.font.size = Pt(10)
+    doc.add_paragraph()
 
-    doc.save(f'{OUTPUT_DIR}/F-08.docx')
-    print('✓ F-08.docx')
+    # Two-column evaluation (النتائج المحققة | تقويم النشاط)
+    tbl2 = doc.add_table(rows=2, cols=2)
+    tbl2.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl2.style = 'Table Grid'
 
-# ─────────────────────────────────────────────
-# F-09 — محضر اجتماع مكتب النادي
-# ─────────────────────────────────────────────
+    for ci, label in enumerate(['النتائج المحققة', 'تقويم النشاط']):
+        c = tbl2.rows[0].cells[ci]
+        cell_bg(c, GREY_BG); cell_border(c)
+        p = c.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER; rtl(p)
+        run = p.add_run(label); run.bold = True; run.font.size = Pt(10)
+
+    # Body cells with dot lines
+    for ci in range(2):
+        c = tbl2.rows[1].cells[ci]; cell_border(c)
+        for _ in range(9):
+            p = c.add_paragraph('. . . . . . . . . . . . . . . . . . . . . . . .')
+            rtl(p); p.runs[0].font.size = Pt(9); p.runs[0].font.color.rgb = GREY_RGB
+
+    doc.save(f'{OUTPUT_DIR}/F-08.docx'); print('✓ F-08.docx')
+
+
+# ═══════════════════════════════════════════════════════════
+# F-09 — بطاقة عناصر محضر الاجتماع
+# ═══════════════════════════════════════════════════════════
 def f09():
-    doc = new_doc('F-09')
-    add_header(doc, 'F-09', 'محضر اجتماع مكتب النادي التربوي')
-
-    for lbl in ['اسم النادي', 'رقم الاجتماع', 'التاريخ', 'المكان', 'المسيِّر', 'الحاضرون', 'المتغيِّبون']:
-        add_field_row(doc, lbl)
+    doc = new_doc()
+    title_bar(doc, 'بطاقة عناصر محضر الاجتماع')
+    doc.add_paragraph()
+    official_header(doc, extra=('التاريـخ', 'المكـان'))
     doc.add_paragraph()
 
-    add_section_title(doc, 'جدول الأعمال')
-    for _ in range(4):
-        p = doc.add_paragraph('  •  ___________________________')
-        set_rtl(p)
+    # المسير
+    p = doc.add_paragraph(); rtl(p)
+    p.add_run('المسير(ة) أو المسيرون :  ').bold = True
+    p.add_run(DOTS_L)
     doc.add_paragraph()
 
-    add_section_title(doc, 'نتائج المداولات')
-    add_table_with_headers(doc,
-        ['النقطة', 'المداولة / القرار', 'المسؤول عن التنفيذ', 'الأجل', 'الملاحظات'],
-        rows=8)
+    for label in ('جدول الأعمال :', 'الحاضرون :', 'المتغيبون بعذر ثم بدون عذر :'):
+        p = doc.add_paragraph(); rtl(p)
+        p.add_run(label).bold = True
+        dot_lines(doc, 2)
+        p2 = doc.add_paragraph('. . . . . . . . . . .')
+        rtl(p2); p2.runs[0].font.size = Pt(9); p2.runs[0].font.color.rgb = GREY_RGB
+        doc.add_paragraph()
 
-    add_section_title(doc, 'التوقيعات')
-    tbl = add_table_with_headers(doc, ['المنصب', 'الاسم', 'التوقيع'], rows=3)
-    for i, role in enumerate(['رئيس الجلسة', 'الكاتب', 'المؤطِّر'], 1):
-        tbl.cell(i, 0).paragraphs[0].text = role
-        set_rtl(tbl.cell(i, 0).paragraphs[0])
+    # Results table
+    section_heading(doc, '', 'نتائج الاجتماع :')
+    headers9 = ['المحور\n(من نقط جدول الأعمال)','القرارات المتخذة','مسؤولية الإنجاز','النتائج المنتظرة','آجال الإنجاز']
+    make_table(doc, headers9, n_rows=3, h_cm=1.5)
 
-    doc.save(f'{OUTPUT_DIR}/F-09.docx')
-    print('✓ F-09.docx')
+    doc.save(f'{OUTPUT_DIR}/F-09.docx'); print('✓ F-09.docx')
 
-# ─────────────────────────────────────────────
-# F-10 — بطاقة تقويم حصيلة النادي
-# ─────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════
+# F-10 — بطاقة تقويم حصيلة النادي  (3 sections)
+# ═══════════════════════════════════════════════════════════
 def f10():
-    doc = new_doc('F-10')
-    add_header(doc, 'F-10', 'بطاقة تقويم حصيلة النادي التربوي')
-
-    for lbl in ['اسم النادي', 'المؤطِّر', 'الموسم الدراسي']:
-        add_field_row(doc, lbl)
+    doc = new_doc()
+    title_bar(doc, 'بطاقة تقويم حصيلة النادي')
+    doc.add_paragraph()
+    official_header(doc)
     doc.add_paragraph()
 
-    add_section_title(doc, 'أولاً: تقييم أدوار الأطراف')
-    add_table_with_headers(doc,
-        ['الطرف', 'المهام المُنجزة', 'المهام غير المُنجزة', 'الأسباب', 'المقترحات'],
-        rows=5)
+    # ── Section .1 — الأطراف وأدوارها ──────────────────────
+    section_heading(doc, '.1', 'الأطراف المشاركة وأدوارها في تفعيل النادي',
+                   note='توضع علامة × في الخانة المناسبة')
 
-    add_section_title(doc, 'ثانياً: مدى تحقق الأهداف')
+    parties = ['مجلس التدبير','المجلس التربوي','هيئة الإدارة','هيئة التدريس',
+               'المتعلمون','هيئة التفتيش','جمعية الآباء','الجماعة المحلية',
+               'قطاعات حكومية','جمعيات تنموية','شركاء','أشخاص مصادر']
+    roles = ['إحداث المكتب','تشكيل اللجان','تشكيل الفرق','التأطير',
+             'التدبير','الدعم المادي','الاستشارة','إنجاز الأنشطة']
+
+    # Table: 1 label col + 8 role cols = 9 cols, header row 0-1 + 12 parties
+    tbl1 = doc.add_table(rows=2+len(parties), cols=9)
+    tbl1.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl1.style = 'Table Grid'
+
+    # Header row 0
+    c00 = tbl1.rows[0].cells[0].merge(tbl1.rows[1].cells[0])  # الأطراف rowspan=2
+    cell_bg(c00, GREY_BG); cell_border(c00)
+    p = c00.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER; rtl(p)
+    r = p.add_run('الأطراف'); r.bold = True; r.font.size = Pt(9)
+
+    roles_merged = tbl1.rows[0].cells[1].merge(tbl1.rows[0].cells[8])  # الأدوار colspan=8
+    cell_bg(roles_merged, GREY_BG); cell_border(roles_merged)
+    p = roles_merged.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER; rtl(p)
+    r = p.add_run('الأدوار'); r.bold = True; r.font.size = Pt(9)
+
+    # Header row 1: role names
+    for ci, role in enumerate(roles, 1):
+        c = tbl1.rows[1].cells[ci]; cell_bg(c, GREY_BG); cell_border(c)
+        p = c.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER; rtl(p)
+        r = p.add_run(role); r.bold = True; r.font.size = Pt(7.5)
+
+    # Party rows
+    for ri, party in enumerate(parties, 2):
+        row_height(tbl1.rows[ri], 0.7)
+        rlabel_cell(tbl1.rows[ri].cells[0], party, 8)
+        for ci in range(1, 9):
+            cell_border(tbl1.rows[ri].cells[ci])
+
+    doc.add_paragraph()
+
+    # ── Section .2 — أهداف النادي ────────────────────────────
+    section_heading(doc, '.2', 'أهداف النادي',
+                   note='توضع علامة × قبل الأهداف المبرمجة فعلاً، مع إضافة أهداف النادي التي لم يتضمنها الجدول')
+
     goals = [
         'استقبال التعلمات في الحياة العملية وتوظيفها في وضعيات حياتية',
         'تحمل المسؤولية والممارسة الديمقراطية',
@@ -461,45 +625,120 @@ def f10():
         'تنمية قدرات التنظيم والتنسيق والرقابة والتقويم',
         'تعزيز الانفتاح على المحيط الثقافي والاجتماعي',
     ]
-    add_table_with_headers(doc,
-        ['الهدف', 'مُحقَّق', 'مُحقَّق جزئياً', 'غير مُحقَّق', 'الملاحظات'],
-        rows=len(goals))
+
+    tbl2 = doc.add_table(rows=len(goals)+3, cols=3)
+    tbl2.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl2.style = 'Table Grid'
+    h_row(tbl2, ['×', 'الأهداف', 'الأنشطة المنجزة لتحقيقها'], 9)
+
+    for ri, g in enumerate(goals, 1):
+        row_height(tbl2.rows[ri], 0.75)
+        cell_border(tbl2.rows[ri].cells[0])
+        rlabel_cell(tbl2.rows[ri].cells[1], g, 8)
+        cell_border(tbl2.rows[ri].cells[2])
+
+    # 2 extra empty rows for additional objectives
+    for ri in range(len(goals)+1, len(goals)+3):
+        row_height(tbl2.rows[ri], 0.75)
+        for ci in range(3):
+            cell_border(tbl2.rows[ri].cells[ci])
+
     doc.add_paragraph()
 
-    add_section_title(doc, 'ثالثاً: إحصاء الأنشطة')
-    add_table_with_headers(doc,
-        ['عدد الأنشطة المبرمجة', 'عدد الأنشطة المُنجزة', 'نسبة الإنجاز (%)'],
-        rows=2)
+    # ── Section .3 — إنجاز الأنشطة ──────────────────────────
+    section_heading(doc, '.3', 'إنجاز أنشطة برنامج عمل النادي',
+                   note='توضع علامة × في الخانة المناسبة وتسجل الملاحظات عند الاقتضاء')
 
-    add_section_title(doc, 'رابعاً: انخراط التلاميذ')
-    add_table_with_headers(doc,
-        ['إجمالي الأعضاء المنخرطين', 'نسبة الإناث', 'نسبة الذكور', 'نسبة الحضور المنتظم'],
-        rows=2)
+    tbl3 = doc.add_table(rows=6, cols=4)
+    tbl3.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl3.style = 'Table Grid'
+    h_row(tbl3, ['الأنشطة المسطرة في برنامج العمل','منجزة','غير منجزة','ملاحظات'], 9)
+    for ri, lbl in enumerate(['النشاط 1','النشاط 2','النشاط 3','النشاط 4','النشاط ...'], 1):
+        row_height(tbl3.rows[ri], 0.8)
+        rlabel_cell(tbl3.rows[ri].cells[0], lbl, 8)
+        for ci in range(1,4): cell_border(tbl3.rows[ri].cells[ci])
 
-    add_section_title(doc, 'خامساً: الصعوبات والمقترحات')
-    add_dotted_line(doc, 'الصعوبات الرئيسية', count=3)
-    add_dotted_line(doc, 'مقترحات التحسين', count=3)
+    doc.add_paragraph()
 
-    doc.save(f'{OUTPUT_DIR}/F-10.docx')
-    print('✓ F-10.docx')
+    # ── Section .4 — التلاميذ ───────────────────────────────
+    section_heading(doc, '.4', 'التلاميذ المنخرطون والمستفيدون من أنشطة النادي')
 
-# ─────────────────────────────────────────────
-# F-11 — بطاقة التقويم المؤسسي للأندية
-# ─────────────────────────────────────────────
+    tbl4a = doc.add_table(rows=2, cols=3)
+    tbl4a.style = 'Table Grid'
+    h_row(tbl4a, ['عدد المنخرطين في التأطير','ذكور','إناث'], 9)
+    row_height(tbl4a.rows[1], 0.8)
+    rlabel_cell(tbl4a.rows[1].cells[0], 'المجموع: . . . . . . .', 8)
+    for ci in range(1,3): cell_border(tbl4a.rows[1].cells[ci])
+
+    doc.add_paragraph()
+    tbl4b = doc.add_table(rows=3, cols=3)
+    tbl4b.style = 'Table Grid'
+    h_row(tbl4b, ['عدد المستفيدين من الأنشطة','ذكور','إناث'], 9)
+    row_height(tbl4b.rows[1], 0.8)
+    rlabel_cell(tbl4b.rows[1].cells[0], 'المجموع: . . . . . . .', 8)
+    for ci in range(1,3): cell_border(tbl4b.rows[1].cells[ci])
+    row_height(tbl4b.rows[2], 0.7)
+    merged4 = tbl4b.rows[2].cells[0].merge(tbl4b.rows[2].cells[2])
+    cell_border(merged4)
+    p = merged4.paragraphs[0]; rtl(p)
+    p.add_run('عدد تلاميذ المؤسسة: . . . . . . .').font.size = Pt(8.5)
+
+    doc.add_paragraph()
+
+    # ── Section .5 — الدروس ─────────────────────────────────
+    section_heading(doc, '.5', 'أهم الدروس والعبر المستخلصة من تجربة النادي',
+                   note='المزايا، الصعوبات، الإكراهات، الحلول...')
+    dot_lines(doc, 5)
+    doc.add_paragraph()
+
+    # ── Section .6 — المقترحات ──────────────────────────────
+    section_heading(doc, '.6', 'أهم المقترحات لتطوير النادي مستقبلاً على ضوء التجربة ونتائج التقويم')
+    dot_lines(doc, 3)
+
+    doc.save(f'{OUTPUT_DIR}/F-10.docx'); print('✓ F-10.docx')
+
+
+# ═══════════════════════════════════════════════════════════
+# F-11 — بطاقة تقويم الأندية (مستوى المؤسسة)
+# ═══════════════════════════════════════════════════════════
 def f11():
-    doc = new_doc('F-11')
-    add_header(doc, 'F-11', 'بطاقة التقويم المؤسسي للأندية التربوية')
-
-    for lbl in ['المؤسسة', 'مُنسِّق لجنة التسيير', 'الموسم الدراسي']:
-        add_field_row(doc, lbl)
+    doc = new_doc()
+    title_bar(doc, 'بطاقة تقويم الأندية')
+    doc.add_paragraph()
+    # F-11 header has no النادي field
+    official_header(doc, has_club=False)
     doc.add_paragraph()
 
-    add_section_title(doc, 'أولاً: إحصاء الأندية')
-    add_table_with_headers(doc,
-        ['اسم النادي', 'المجال', 'المؤطِّر', 'عدد الأعضاء', 'عدد الأنشطة المُنجزة', 'التقييم العام'],
-        rows=8)
+    # ── Section .1 — الأندية المحدثة ────────────────────────
+    section_heading(doc, '.1', 'الأندية المحدثة في المؤسسة')
+    headers11a = ['النادي','تاريخ الإحداث','رئيس المكتب','عدد اللجان الوظيفية','عدد فرق العمل']
+    make_table(doc, headers11a, n_rows=3, h_cm=1.0)
+    doc.add_paragraph()
 
-    add_section_title(doc, 'ثانياً: مؤشرات الأثر على مستوى المؤسسة')
+    # ── Section .2 — التلاميذ ───────────────────────────────
+    section_heading(doc, '.2', 'التلاميذ المنخرطون والمستفيدون من أنشطة النادي')
+    tbl2a = doc.add_table(rows=2, cols=3); tbl2a.style = 'Table Grid'
+    h_row(tbl2a, ['عدد المنخرطين في التأطير','ذكور','إناث'], 9)
+    row_height(tbl2a.rows[1], 0.8)
+    rlabel_cell(tbl2a.rows[1].cells[0], 'المجموع: . . . . . . .', 8)
+    for ci in range(1,3): cell_border(tbl2a.rows[1].cells[ci])
+
+    doc.add_paragraph()
+    tbl2b = doc.add_table(rows=3, cols=3); tbl2b.style = 'Table Grid'
+    h_row(tbl2b, ['عدد المستفيدين من الأنشطة','ذكور','إناث'], 9)
+    row_height(tbl2b.rows[1], 0.8)
+    rlabel_cell(tbl2b.rows[1].cells[0], 'المجموع: . . . . . . .', 8)
+    for ci in range(1,3): cell_border(tbl2b.rows[1].cells[ci])
+    row_height(tbl2b.rows[2], 0.7)
+    merged = tbl2b.rows[2].cells[0].merge(tbl2b.rows[2].cells[2])
+    cell_border(merged)
+    p = merged.paragraphs[0]; rtl(p)
+    p.add_run('عدد تلاميذ المؤسسة: . . . . . . .').font.size = Pt(8.5)
+    doc.add_paragraph()
+
+    # ── Section .3 — أثر الأندية ────────────────────────────
+    section_heading(doc, '.3', 'أثر الأندية على بعض مؤشرات الارتقاء بالمؤسسة وتحسين نتائج التعلم',
+                   note='توضع علامة × في الخانة المناسبة')
     indicators = [
         'تحسين نسبة النجاح',
         'تقليل نسبة الهدر المدرسي',
@@ -511,24 +750,43 @@ def f11():
         'تقلص ظواهر الانحراف وتنمية السلوكات الإيجابية',
         'تزايد أنشطة تطبيقات التعلم في الحياة العملية',
     ]
-    add_table_with_headers(doc,
-        ['المؤشر', 'القيمة / النسبة', 'الملاحظات'],
-        rows=len(indicators))
+    tbl3 = doc.add_table(rows=len(indicators)+1, cols=5)
+    tbl3.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl3.style = 'Table Grid'
+    h_row(tbl3, ['الأثر في','جيد','مستحسن','متوسط','ضعيف'], 9)
+    for ri, ind in enumerate(indicators, 1):
+        row_height(tbl3.rows[ri], 0.75)
+        rlabel_cell(tbl3.rows[ri].cells[0], ind, 8)
+        for ci in range(1,5): cell_border(tbl3.rows[ri].cells[ci])
     doc.add_paragraph()
 
-    add_section_title(doc, 'ثالثاً: توصيات للسنة القادمة')
-    add_dotted_line(doc, '', count=5)
+    # ── Section .4 — حصيلة الأندية ──────────────────────────
+    section_heading(doc, '.4', 'نتائج تقويم حصيلة الأندية',
+                   note='يدرج ملخص مركز بنتائج التقويم الخاصة بكل نادٍ على حدة')
+    tbl4 = doc.add_table(rows=4, cols=2)
+    tbl4.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl4.style = 'Table Grid'
+    h_row(tbl4, ['النادي', 'نتائج التقويم'], 9)
+    for ri, lbl in enumerate(['النادي 1','النادي 2','النادي . . .'], 1):
+        row_height(tbl4.rows[ri], 2.0)
+        rlabel_cell(tbl4.rows[ri].cells[0], lbl, 9)
+        cell_border(tbl4.rows[ri].cells[1])
     doc.add_paragraph()
 
-    p = doc.add_paragraph()
-    set_rtl(p)
-    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    p.add_run('توقيع المُنسِّق: ___________________        توقيع المدير: ___________________')
+    # ── Section .5 — الدروس ─────────────────────────────────
+    section_heading(doc, '.5', 'أهم الدروس والعبر المستخلصة من تجربة الأندية',
+                   note='المزايا، الصعوبات، الإكراهات، الحلول...')
+    dot_lines(doc, 4)
+    doc.add_paragraph()
 
-    doc.save(f'{OUTPUT_DIR}/F-11.docx')
-    print('✓ F-11.docx')
+    # ── Section .6 — المقترحات ──────────────────────────────
+    section_heading(doc, '.6', 'أهم المقترحات لتطوير العمل بالأندية مستقبلاً على ضوء التجربة ونتائج التقويم')
+    dot_lines(doc, 3)
+
+    doc.save(f'{OUTPUT_DIR}/F-11.docx'); print('✓ F-11.docx')
 
 
+# ── Run all ───────────────────────────────────────────────
 if __name__ == '__main__':
     f01(); f02(); f03()
     f04(); f05(); f06(); f07()

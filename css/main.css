@@ -759,6 +759,9 @@ main {
 .btn-nav-next:hover { background: #c8922e; }
 .btn-nav-next:disabled { opacity: .4; cursor: not-allowed; }
 
+/* Facilitator slide collapsibles (fpCollapsible) */
+.fp-body.open { display: block !important; }
+
 /* --- Misc utils --------------------------------------- */
 .section-intro {
   background: var(--surface);

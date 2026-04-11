@@ -392,7 +392,7 @@ function renderConcept() {
         </div>`).join('')}
     `)}
 
-    ${makeCollapsible('c-eval-parties', '👥 أطراف التقويم (10 أطراف رسمية)', `
+    ${makeCollapsible('c-eval-parties', '👥 أطراف التقويم (12 طرفاً رسمياً)', `
       <p style="font-size:.83rem; color:var(--txt-muted); margin-bottom:.65rem; line-height:1.65;">
         يُشارك في تقويم النادي التربوي 12 طرفاً رسمياً — كل طرف يُقدِّم منظوره الخاص (بطاقة ن-10):
       </p>
@@ -689,7 +689,7 @@ function fpCollapsible(id, label, body) {
         ${body}
       </div>
     </div>
-    <style>.fp-body.open{display:block!important}</style>`;
+  `;
 }
 
 const FACILITATOR_SLIDES = [
