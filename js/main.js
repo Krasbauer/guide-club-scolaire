@@ -1164,7 +1164,7 @@ function buildFillableF08() {
   return `<div class="fiche-preview fiche-fillable" id="fiche-fill-F-08">
 
   <div class="fi-toolbar no-print">
-    <span class="fi-toolbar-label">وضع الملء — يُحفظ تلقائياً على هذا الجهاز ${savedBadge}</span>
+    <span class="fi-toolbar-label">✏️ وضع الملء ${savedBadge}</span>
     <button class="fi-btn-clear" onclick="clearFillable('F-08')">🗑️ مسح</button>
     <button class="fi-btn-print" onclick="printFillable('F-08')">🖨️ طباعة</button>
   </div>

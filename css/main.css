@@ -940,7 +940,8 @@ body.printing-fiche #print-area {
 /* Inputs inside header/fields */
 .fi-input {
   flex: 1;
-  min-width: 60px;
+  min-width: 0;
+  width: 0;
   border: none;
   border-bottom: 1.5px solid var(--accent);
   outline: none;
@@ -950,6 +951,8 @@ body.printing-fiche #print-area {
   color: var(--txt);
   padding: .1rem .2rem;
   direction: rtl;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .fi-input:focus { border-bottom-color: var(--accent-l); background: var(--accent-bg); border-radius: 3px 3px 0 0; }
 
