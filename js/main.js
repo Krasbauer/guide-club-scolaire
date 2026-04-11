@@ -140,6 +140,15 @@ function renderHome() {
         </div>
         <span class="card-arrow" style="color:var(--gold);">‹</span>
       </div>
+
+      <div class="nav-card card-wide" onclick="openActivitiesBank()" style="border-right:3px solid var(--blue);">
+        <span class="card-icon">💡</span>
+        <div class="card-body">
+          <div class="card-title" style="color:var(--blue);">بنك الأنشطة</div>
+          <div class="card-sub">8 مجالات × 4 أنشطة — مقترحات لبرامج الأندية</div>
+        </div>
+        <span class="card-arrow" style="color:var(--blue);">‹</span>
+      </div>
     </div>
 
     <div class="section-intro" style="margin-top:1rem;">
@@ -147,6 +156,84 @@ function renderHome() {
       ابدأ بـ<strong>المفهوم</strong> لتتعرف على الأندية التربوية وأهدافها، ثم اطَّلع على <strong>المسار</strong> لمعرفة خطوات الإحداث كاملةً، وارجع إلى <strong>البطاقات</strong> لتحميل النماذج الرسمية واستخدامها.
       إذا كنت تُنظِّم نشاطاً صفياً لمحاكاة تأسيس نادٍ، استخدم <strong>وضع المُيسِّر</strong>.
     </div>`;
+}
+
+/* ── Activities Bank ─────────────────────────────────── */
+const ACTIVITIES_BANK = [
+  { icon: '🤝', cat: 'التعاون والتضامن', color: '#2d6a4f', activities: [
+    'تنظيم يوم تضامن مع تلاميذ محتاجين أو ذوي احتياجات خاصة',
+    'حملة تبرع بالكتب والأدوات المدرسية',
+    'نشاط "مرشد الصف الأول" — تلاميذ كبار يرافقون الصغار',
+    'مشروع "مقهى التواصل" — نشاطات جماعية بين أفواج مختلفة',
+  ]},
+  { icon: '❤️', cat: 'الصحة والسلامة', color: '#c0392b', activities: [
+    'ورشة إسعاف أولي وتعريف بمخاطر الإصابات الشائعة',
+    'حملة توعية بالتغذية السليمة وأضرار المأكولات المصنَّعة',
+    'نشاط رياضي صباحي دوري (تمدد، مشي، ألعاب جماعية)',
+    'حملة ضد التدخين والمخدرات بمشاركة جمعيات خارجية',
+  ]},
+  { icon: '🌱', cat: 'البيئة والتنمية المستدامة', color: '#40916c', activities: [
+    'إنشاء ركن أخضر في فناء المدرسة أو حديقة مدرسية',
+    'حملة تنظيف المحيط المدرسي والحي',
+    'ورشة إعادة تدوير النفايات وصنع أشياء نافعة',
+    'مشاركة في اليوم العالمي للبيئة بعروض وأنشطة توعوية',
+  ]},
+  { icon: '🎨', cat: 'الفن والإبداع', color: '#b07d3a', activities: [
+    'عرض مسرحي قصير حول قيمة تربوية',
+    'ورشة خط عربي أو زليج مغربي أو زخرفة',
+    'تصوير فيلم قصير (جوال) حول حياة المؤسسة',
+    'معرض لوحات فنية من صنع التلاميذ في نهاية السنة',
+  ]},
+  { icon: '📚', cat: 'القراءة والكتابة', color: '#6b46c1', activities: [
+    'نادي قراءة — كل أسبوعين كتاب ومناقشة',
+    'إصدار جريدة حائط أو مجلة مدرسية',
+    'مسابقة قصة قصيرة أو شعر أو خطابة',
+    'زيارة مكتبة جهوية أو استضافة كاتب',
+  ]},
+  { icon: '💻', cat: 'الإعلاميات والرقميات', color: '#2c6fad', activities: [
+    'ورشة إنشاء مدوَّنة أو صفحة للنادي',
+    'تصميم إنفوغرافيك حول موضوع تربوي بالأدوات المجانية',
+    'تعلُّم برمجة بسيطة (Scratch) أو إنشاء عروض رقمية',
+    'مسابقة تصوير فوتوغرافي بالهاتف + معرض رقمي',
+  ]},
+  { icon: '🔬', cat: 'العلوم والاكتشاف', color: '#0e7490', activities: [
+    'تجارب علمية بسيطة مع شرح المبادئ (كيمياء، فيزياء)',
+    'مشروع زراعة نباتات ومتابعة نموها',
+    'زيارة مؤسسة علمية أو مختبر',
+    'مسابقة اختراعات بسيطة لحل مشكلة في المدرسة',
+  ]},
+  { icon: '⚽', cat: 'الرياضة والحركة', color: '#1a5c38', activities: [
+    'دوري كرة قدم أو كرة اليد بين أفواج المؤسسة',
+    'تعلُّم رياضة جديدة (بينغ بونغ، شطرنج، فنون دفاعية)',
+    'يوم رياضي مفتوح مع دعوة أولياء الأمور',
+    'تمارين تنمية الإدراك الحركي وتنسيق الحركة',
+  ]},
+];
+
+function openActivitiesBank() {
+  const html = ACTIVITIES_BANK.map(cat => `
+    <div style="margin-bottom:1.1rem;">
+      <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem;">
+        <span style="font-size:1.3rem;">${cat.icon}</span>
+        <strong style="font-size:.92rem; color:${cat.color};">${cat.cat}</strong>
+      </div>
+      <ul style="padding-right:1.2rem; list-style:disc; font-size:.85rem; line-height:1.9; color:var(--txt);">
+        ${cat.activities.map(a => `<li>${a}</li>`).join('')}
+      </ul>
+    </div>`).join('<hr style="border:none;border-top:1px solid var(--border);margin:.5rem 0;">');
+
+  document.getElementById('modal-title').textContent = 'بنك الأنشطة — مقترحات لبرامج الأندية';
+  document.getElementById('modal-body').innerHTML = `
+    <p style="font-size:.83rem; color:var(--txt-muted); margin-bottom:1rem; line-height:1.65;">
+      8 مجالات × 4 أنشطة مقترحة — مصدر إلهام لبرامج العمل. هذه الأنشطة قابلة للتكييف حسب المستوى والموارد المتاحة.
+    </p>
+    ${html}`;
+
+  document.getElementById('modal-docx-btn').style.display = 'none';
+  document.getElementById('modal-pdf-btn').style.display = 'none';
+  document.getElementById('fiche-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  history.pushState({ section: state.currentSection, modal: 'activities-bank', facilitator: false }, '', '#activities-bank');
 }
 
 /* ── Concept ─────────────────────────────────────────── */
@@ -170,13 +257,14 @@ function renderConcept() {
       </ul>
     `)}
 
-    ${makeCollapsible('c-obj', '🎯 الأهداف التربوية (8 أهداف)', `
+    ${makeCollapsible('c-obj', '🎯 الأهداف التربوية (9 أهداف)', `
       <ol style="padding-right:1.4rem; line-height:2.1; font-size:.9rem;">
         <li>تعزيز ممارسة الديمقراطية وتدبير الاختلاف.</li>
         <li>تنمية مهارات الإدارة والتنظيم والتخطيط.</li>
         <li>تطوير مهارات التواصل والتعبير والحوار.</li>
         <li>صقل الكفايات الحياتية في سياقات حقيقية.</li>
-        <li>تعزيز الانتماء المؤسسي وروح الفريق.</li>
+        <li>تقوية الانتماء إلى الجماعة والمجتمع والمؤسسة.</li>
+        <li>تعزيز روح الفريق والتعاون والعمل المشترك.</li>
         <li>اكتشاف المواهب وتطوير الإبداع.</li>
         <li>ترسيخ قيم المواطنة والمسؤولية الاجتماعية.</li>
         <li>فتح المؤسسة على محيطها الثقافي والاجتماعي.</li>
@@ -198,7 +286,7 @@ function renderConcept() {
       <strong style="display:block; margin-bottom:.5rem; font-size:.9rem; color:var(--accent);">نوعان من الأندية:</strong>
       <ul style="padding-right:1.2rem; list-style:disc; font-size:.88rem; line-height:2;">
         <li><strong>الأندية الموضوعاتية:</strong> تتمحور حول موضوع واحد (نادي المسرح، نادي البيئة...).</li>
-        <li><strong>أندية الأساليب:</strong> تستخدم مقاربة واحدة عبر مواضيع متعددة (نادي الصحافة المدرسية، نادي الأبحاث...).</li>
+        <li><strong>أندية الاشتراك:</strong> تستخدم مقاربة واحدة عبر مواضيع متعددة (نادي الصحافة المدرسية، نادي الأبحاث، نادي الإعلاميات...).</li>
       </ul>
     `)}
 
@@ -219,44 +307,51 @@ function renderConcept() {
 
     ${makeCollapsible('c-org', '🏗️ الهيكل التنظيمي للنادي', `
       <div style="overflow-x:auto;">
-        <svg viewBox="0 0 340 220" width="100%" style="max-width:380px; display:block; margin:0 auto;">
-          <!-- Niveau 1 : Directeur -->
-          <rect x="110" y="8" width="120" height="36" rx="8" fill="#2c6fad" opacity=".9"/>
-          <text x="170" y="31" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">مدير المؤسسة</text>
+        <svg viewBox="0 0 360 165" width="100%" style="max-width:400px; display:block; margin:0 auto;">
 
-          <!-- Ligne -->
-          <line x1="170" y1="44" x2="170" y2="64" stroke="#aaa" stroke-width="1.5"/>
+          <!-- ═══ Labels de section ═══ -->
+          <text x="80" y="11" text-anchor="middle" fill="#2c6fad" font-size="8.5" font-family="IBM Plex Sans Arabic,Arial" font-weight="700">الإشراف المؤسسي</text>
+          <text x="280" y="11" text-anchor="middle" fill="#2d6a4f" font-size="8.5" font-family="IBM Plex Sans Arabic,Arial" font-weight="700">الهيكل الداخلي للنادي</text>
 
-          <!-- Niveau 2 : Coordinateur -->
-          <rect x="105" y="64" width="130" height="34" rx="8" fill="#40916c" opacity=".9"/>
-          <text x="170" y="86" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">منسِّق الأندية</text>
+          <!-- ═══ Côté institutionnel (gauche) ═══ -->
+          <rect x="16" y="16" width="128" height="32" rx="7" fill="#2c6fad" opacity=".9"/>
+          <text x="80" y="36" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">مدير المؤسسة</text>
 
-          <!-- Ligne -->
-          <line x1="170" y1="98" x2="170" y2="114" stroke="#aaa" stroke-width="1.5"/>
+          <line x1="80" y1="48" x2="80" y2="62" stroke="#aaa" stroke-width="1.5"/>
 
-          <!-- Niveau 3 : deux branches -->
-          <line x1="80" y1="114" x2="260" y2="114" stroke="#aaa" stroke-width="1.5"/>
-          <line x1="80" y1="114" x2="80" y2="130" stroke="#aaa" stroke-width="1.5"/>
-          <line x1="260" y1="114" x2="260" y2="130" stroke="#aaa" stroke-width="1.5"/>
+          <rect x="16" y="62" width="128" height="30" rx="7" fill="#40916c" opacity=".9"/>
+          <text x="80" y="82" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">منسِّق الأندية</text>
 
-          <!-- Moutir -->
-          <rect x="16" y="130" width="128" height="34" rx="8" fill="#b07d3a" opacity=".9"/>
-          <text x="80" y="152" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">المؤطِّر التربوي</text>
+          <line x1="80" y1="92" x2="80" y2="106" stroke="#aaa" stroke-width="1.5"/>
 
-          <!-- Bureau -->
-          <rect x="196" y="130" width="128" height="34" rx="8" fill="#2d6a4f" opacity=".9"/>
-          <text x="260" y="152" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">مكتب النادي</text>
+          <rect x="16" y="106" width="128" height="30" rx="7" fill="#b07d3a" opacity=".9"/>
+          <text x="80" y="126" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">المؤطِّر التربوي</text>
 
-          <!-- Ligne bureau → membres -->
-          <line x1="260" y1="164" x2="260" y2="180" stroke="#aaa" stroke-width="1.5"/>
+          <!-- Lien de supervision (pointillé) vers مكتب -->
+          <line x1="144" y1="121" x2="206" y2="87" stroke="#888" stroke-width="1.2" stroke-dasharray="4,3"/>
 
-          <!-- Membres -->
-          <rect x="196" y="180" width="128" height="32" rx="8" fill="#52b788" opacity=".85"/>
-          <text x="260" y="200" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">أعضاء النادي</text>
+          <!-- ═══ Côté club interne (droite) ═══ -->
+          <!-- الجمع العام — autorité suprême -->
+          <rect x="206" y="16" width="148" height="32" rx="7" fill="#b07d3a" opacity=".9"/>
+          <text x="280" y="36" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">الجمع العام للنادي</text>
+
+          <line x1="280" y1="48" x2="280" y2="62" stroke="#aaa" stroke-width="1.5"/>
+
+          <!-- المكتب التنفيذي -->
+          <rect x="206" y="62" width="148" height="32" rx="7" fill="#2d6a4f" opacity=".9"/>
+          <text x="280" y="79" text-anchor="middle" fill="white" font-size="10" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">المكتب التنفيذي</text>
+          <text x="280" y="90" text-anchor="middle" fill="rgba(255,255,255,.75)" font-size="8.5" font-family="IBM Plex Sans Arabic,Arial">رئيس · نائب الرئيس · كاتب</text>
+
+          <line x1="280" y1="94" x2="280" y2="108" stroke="#aaa" stroke-width="1.5"/>
+
+          <!-- أعضاء -->
+          <rect x="206" y="108" width="148" height="30" rx="7" fill="#52b788" opacity=".85"/>
+          <text x="280" y="128" text-anchor="middle" fill="white" font-size="11" font-family="IBM Plex Sans Arabic,Arial" font-weight="600">أعضاء النادي</text>
+
         </svg>
       </div>
       <p style="font-size:.82rem; color:var(--txt-muted); margin-top:.6rem; line-height:1.65;">
-        <strong>المكتب</strong> يتكون من: الرئيس، نائب الرئيس، الكاتب، نائب الكاتب، الخازن — يُنتخبون في الجمع التأسيسي.
+        <strong>المكتب التنفيذي</strong> يُنتخَب من طرف <strong>الجمع العام</strong> — يتكون من: الرئيس، نائب الرئيس، الكاتب. الخط المنقَّط = إشراف وتأطير مؤسسي.
       </p>
     `)}
 
@@ -275,6 +370,52 @@ function renderConcept() {
             <p style="font-size:.83rem; color:var(--txt-muted); margin-top:2px; line-height:1.6;">${d}</p>
           </div>
         </div>`).join('')}
+    `)}
+
+    ${makeCollapsible('c-admin-resp', '🏛️ مسؤوليات الإدارة (شروط النجاح — ص91-92)', `
+      <p style="font-size:.83rem; color:var(--txt-muted); margin-bottom:.65rem; line-height:1.65;">
+        يُحدِّد الدليل الرسمي مسؤوليات الإدارة بشكل صريح — هي شرط لا خيار:
+      </p>
+      ${[
+        ['توفير الزمان والمكان', 'تخصيص حصص ثابتة في الجدول الزمني وفضاء ملائم لاشتغال النادي.'],
+        ['توفير الوسائل المادية والبشرية', 'تأمين الأدوات والتجهيزات اللازمة وتسهيل مهمة المؤطرين.'],
+        ['إرساء الشراكات الخارجية', 'ربط علاقات مع مؤسسات وجمعيات تُعزِّز برامج الأندية.'],
+        ['إعداد تقارير التقويم', 'رفع تقارير منتظمة إلى المديريات الإقليمية حول أداء الأندية.'],
+        ['ضمان التنسيق المؤسسي', 'التنسيق بين المجلس التربوي ومجلس التدبير وجمعية الآباء ومختلف الفاعلين.'],
+      ].map(([t, d]) => `
+        <div style="display:flex; gap:.7rem; align-items:flex-start; padding:.55rem 0; border-bottom:1px solid var(--border);">
+          <span style="color:var(--blue); font-size:1rem; flex-shrink:0; margin-top:2px;">◈</span>
+          <div>
+            <strong style="font-size:.88rem; color:var(--blue);">${t}</strong>
+            <p style="font-size:.82rem; color:var(--txt-muted); margin-top:2px; line-height:1.6;">${d}</p>
+          </div>
+        </div>`).join('')}
+    `)}
+
+    ${makeCollapsible('c-eval-parties', '👥 أطراف التقويم (10 أطراف رسمية)', `
+      <p style="font-size:.83rem; color:var(--txt-muted); margin-bottom:.65rem; line-height:1.65;">
+        يُشارك في تقويم النادي التربوي 12 طرفاً رسمياً — كل طرف يُقدِّم منظوره الخاص (بطاقة ن-10):
+      </p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:.45rem;">
+        ${[
+          ['مجلس التدبير','⚙️'],
+          ['المجلس التربوي','📚'],
+          ['هيئة الإدارة','🏛️'],
+          ['هيئة التدريس','👨‍🏫'],
+          ['المتعلمون','🎓'],
+          ['هيئة التفتيش','🔍'],
+          ['جمعية الآباء','👪'],
+          ['الجماعة المحلية','🏘️'],
+          ['قطاعات حكومية','🏢'],
+          ['جمعيات تنموية','🤝'],
+          ['شركاء','🔗'],
+          ['أشخاص مصادر','💡'],
+        ].map(([label, icon]) => `
+          <div style="display:flex; align-items:center; gap:.5rem; background:var(--violet-bg); border:1px solid #d8d0f5; border-radius:7px; padding:.45rem .6rem; font-size:.82rem;">
+            <span style="font-size:1rem;">${icon}</span>
+            <span>${label}</span>
+          </div>`).join('')}
+      </div>
     `)}
   `;
 }
@@ -447,11 +588,13 @@ function openFiche(id) {
   const docxBtn = document.getElementById('modal-docx-btn');
   docxBtn.href = 'fiches-docx/' + f.id + '.docx';
   docxBtn.setAttribute('download', f.num + ' — ' + f.title + '.docx');
+  docxBtn.style.display = '';
 
   // PDF button
   const pdfBtn = document.getElementById('modal-pdf-btn');
   pdfBtn.href = 'fiches-pdf/' + f.id + '.pdf';
   pdfBtn.setAttribute('download', f.num + ' — ' + f.title + '.pdf');
+  pdfBtn.style.display = '';
 
   document.getElementById('fiche-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -525,197 +668,393 @@ function renderLegal() {
 }
 
 /* ── Facilitator mode ────────────────────────────────── */
+// Helper: .say box (script for facilitator)
+function say(text) {
+  return `<div style="background:rgba(176,125,58,.22); border:1px solid var(--gold); border-radius:9px; padding:.75rem 1rem; margin:.9rem 0 .5rem; font-size:.85rem; color:rgba(255,255,255,.9); line-height:1.75;">
+    <strong style="color:var(--gold); display:block; margin-bottom:.3rem; font-size:.8rem;">💬 ماذا تقول:</strong>
+    <em>"${text}"</em>
+  </div>`;
+}
+
+// Helper: collapsible inside facilitator slide
+function fpCollapsible(id, label, body) {
+  return `
+    <div style="border:1px solid rgba(255,255,255,.12); border-radius:8px; margin-top:.75rem; overflow:hidden;">
+      <div onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.fc-chev').style.transform=this.nextElementSibling.classList.contains('open')?'rotate(180deg)':''"
+           style="display:flex; justify-content:space-between; align-items:center; padding:.6rem .85rem; background:rgba(255,255,255,.07); cursor:pointer; font-size:.85rem; color:var(--gold); font-weight:600;">
+        <span>${label}</span>
+        <span class="fc-chev" style="transition:transform .2s; font-size:.75rem;">▾</span>
+      </div>
+      <div class="fp-body" style="display:none; padding:.75rem .85rem; font-size:.83rem; color:rgba(255,255,255,.85); line-height:1.75;">
+        ${body}
+      </div>
+    </div>
+    <style>.fp-body.open{display:block!important}</style>`;
+}
+
 const FACILITATOR_SLIDES = [
+  /* ── 0. Intro ─────────────────────────────────────────── */
   {
     title: 'وضع المُيسِّر — الأندية التربوية',
     content: `
-      <div style="text-align:center; color:white; padding:1.5rem 0;">
-        <div style="font-size:3rem; margin-bottom:.75rem;">🎯</div>
-        <h2 style="color:var(--gold); font-size:1.3rem;">محاكاة تأسيس نادٍ تربوي</h2>
-        <p style="color:rgba(255,255,255,.7); margin-top:.5rem; font-size:.9rem;">
-          سيمُرُّ الفصل بالتجربة الكاملة لتأسيس نادٍ من الإعلان حتى التقويم.
+      <div style="text-align:center; color:white; padding:1rem 0 .5rem;">
+        <div style="font-size:3rem; margin-bottom:.5rem;">🎯</div>
+        <h2 style="color:var(--gold); font-size:1.2rem;">محاكاة تأسيس نادٍ تربوي</h2>
+        <p style="color:rgba(255,255,255,.65); margin-top:.4rem; font-size:.87rem;">
+          سيمُرُّ الفصل بالتجربة الكاملة لتأسيس نادٍ — من الإعلان حتى التقويم.
         </p>
-        <div style="margin-top:1.5rem; text-align:right; background:rgba(255,255,255,.06); border-radius:10px; padding:1rem; font-size:.85rem; line-height:2; color:rgba(255,255,255,.8);">
-          <strong style="color:var(--gold); display:block; margin-bottom:.4rem;">📋 ما سنتناوله:</strong>
-          الإعلان عن النادي ← الجمع التأسيسي ← بناء المشروع ← التخطيط ← التنفيذ ← التقويم
-        </div>
       </div>
+      <div style="background:rgba(255,255,255,.06); border-radius:10px; padding:.85rem 1rem; font-size:.83rem; line-height:2; color:rgba(255,255,255,.85);">
+        <strong style="color:var(--gold); display:block; margin-bottom:.35rem;">📋 مراحل الجلسة:</strong>
+        <span style="color:rgba(255,255,255,.5);">←</span> إعلان العزم
+        <span style="color:rgba(255,255,255,.5);"> ← </span> هوية النادي
+        <span style="color:rgba(255,255,255,.5);"> ← </span> الجمع التأسيسي
+        <span style="color:rgba(255,255,255,.5);"> ← </span> هيكلة المكتب
+        <span style="color:rgba(255,255,255,.5);"> ← </span> بناء المشروع
+        <span style="color:rgba(255,255,255,.5);"> ← </span> التخطيط
+        <span style="color:rgba(255,255,255,.5);"> ← </span> التنفيذ
+        <span style="color:rgba(255,255,255,.5);"> ← </span> التقويم
+      </div>
+      ${say('قبل أن نبدأ، لنأخذ دقيقة لنرى الصورة الكاملة. سنُحاكي اليوم كيف يُؤسَّس نادٍ تربوي حقيقي — كل مجموعة ستكون نادياً، وكل خطوة ستملؤون فيها نموذجاً رسمياً. هذه ليست ورقة عمل، هذا ما سيفعله التلاميذ فعلاً في مؤسستكم.')}
     `,
     timer: null,
-    tip: null,
+    tip: 'قسِّم الفصل إلى 3-4 مجموعات قبل البدء. كل مجموعة = نادٍ مستقل. سجِّل الأسماء المقترحة على السبورة.',
   },
+
+  /* ── 1. إعلان العزم ──────────────────────────────────── */
   {
     title: 'الخطوة 5 — إعلان العزم على التأسيس',
     content: `
       <div style="color:white;">
-        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:1rem; margin-bottom:1rem;">
-          <strong style="color:var(--accent-bg); font-size:.85rem;">الهدف من هذه الخطوة</strong>
-          <p style="font-size:.88rem; margin-top:.35rem; line-height:1.7; color:rgba(255,255,255,.85);">
-            الإعلان الرسمي عن نية إحداث النادي واستقطاب الأعضاء قبل الجمع التأسيسي.
+        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:.85rem 1rem; margin-bottom:.75rem;">
+          <strong style="color:var(--accent-bg); font-size:.85rem;">الهدف</strong>
+          <p style="font-size:.87rem; margin-top:.3rem; line-height:1.7; color:rgba(255,255,255,.85);">
+            إعلان رسمي عن نية إحداث النادي لاستقطاب الأعضاء قبل الجمع التأسيسي.
           </p>
         </div>
-        <strong style="color:var(--gold); font-size:.9rem;">🛠️ نشاط القسم:</strong>
-        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.5rem; line-height:2; font-size:.88rem; color:rgba(255,255,255,.85);">
-          <li>قسِّم الطلبة إلى مجموعات — كل مجموعة تُمثِّل نادياً.</li>
-          <li>كل مجموعة تُحدِّد: اسم النادي + مجاله + هدفه.</li>
+        ${say('الآن كل مجموعة تُفكِّر: ما هو ناديها؟ ما مجاله؟ لمن موجَّه؟ لديكم 5 دقائق، ثم ممثل كل مجموعة يُعلن عن نادييه أمام الفصل.')}
+        <strong style="color:var(--gold); font-size:.88rem;">🛠️ نشاط القسم:</strong>
+        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.45rem; line-height:2; font-size:.87rem; color:rgba(255,255,255,.85);">
+          <li>كل مجموعة تُحدِّد: <strong>اسم النادي + مجاله + هدفه الرئيسي</strong>.</li>
           <li>يكتب ممثل كل مجموعة الإعلان (نموذج ن-01).</li>
-          <li>تقديم الإعلان أمام الفصل.</li>
+          <li>تقديم الإعلان شفهياً أمام الفصل (دقيقة واحدة لكل مجموعة).</li>
         </ol>
-        <div style="background:rgba(176,125,58,.2); border:1px solid var(--gold); border-radius:8px; padding:.7rem; margin-top:.75rem; font-size:.82rem; color:rgba(255,255,255,.8);">
-          📎 النموذج المستخدم: <strong style="color:var(--gold);">ن-01 — إعلان العزم على التأسيس</strong>
+        <div style="background:rgba(176,125,58,.15); border:1px solid var(--gold); border-radius:8px; padding:.65rem; margin-top:.65rem; font-size:.82rem; color:rgba(255,255,255,.8);">
+          📎 <strong style="color:var(--gold);">ن-01 — إعلان العزم على التأسيس</strong>
         </div>
       </div>
     `,
     timer: 10,
-    tip: 'ذكِّر الطلبة أن الإعلان يجب أن يتضمن: اسم النادي، مجاله، الهدف، تاريخ الجمع التأسيسي.',
+    tip: 'ضاق الوقت؟ 3 مجموعات تُعلن شفهياً فقط (بدون نموذج) — الإعلان المكتوب اختياري في هذه المرحلة.',
   },
+
+  /* ── 2. هوية النادي (جديد) ───────────────────────────── */
+  {
+    title: 'هوية النادي — الاسم والأهداف والفئات',
+    content: `
+      <div style="color:white;">
+        <div style="background:rgba(44,111,173,.3); border:1px solid #6eaad4; border-radius:10px; padding:.85rem 1rem; margin-bottom:.75rem;">
+          <strong style="color:#a8d4f5; font-size:.85rem;">لماذا هذه المرحلة؟</strong>
+          <p style="font-size:.87rem; margin-top:.3rem; line-height:1.7; color:rgba(255,255,255,.85);">
+            الهوية هي "الدستور" الداخلي للنادي — بدونها يُصبح النادي مجرد تجمُّع عشوائي.
+          </p>
+        </div>
+        ${say('قبل الانتخابات، على كل نادٍ أن يُحدِّد من هو. الاسم ليس شكليًا — هو رسالة. والأهداف يجب أن تكون واضحة ليعرف المنتخَب ماذا يُدير.')}
+        ${fpCollapsible('fp-names', '📛 كيف أختار اسمًا لناديي؟', `
+          <strong>✅ أسماء جيدة:</strong>
+          <ul style="padding-right:1.1rem; list-style:disc; margin:.3rem 0 .7rem;">
+            <li>تعبِّر عن المجال (نادي البيئة الخضراء، نادي المسرح والإبداع)</li>
+            <li>سهلة الحفظ والترديد</li>
+            <li>تُثير الانتماء والفخر</li>
+          </ul>
+          <strong>❌ أسماء يُفضَّل تجنُّبها:</strong>
+          <ul style="padding-right:1.1rem; list-style:disc; margin:.3rem 0;">
+            <li>أسماء مجردة جداً (نادي 1، نادي التلاميذ)</li>
+            <li>أسماء تُنسخ من أندية رياضية مشهورة</li>
+            <li>أسماء طويلة جداً يصعب تذكُّرها</li>
+          </ul>
+        `)}
+        ${fpCollapsible('fp-smart', '🎯 أهداف SMART للنادي', `
+          أهداف جيدة تتبع معيار <strong>SMART</strong>:<br>
+          <span style="color:var(--gold);">S</span>pécifique — محدَّدة وواضحة<br>
+          <span style="color:var(--gold);">M</span>esurable — قابلة للقياس<br>
+          <span style="color:var(--gold);">A</span>tteignable — واقعية وممكنة<br>
+          <span style="color:var(--gold);">R</span>éaliste — مرتبطة بسياق المؤسسة<br>
+          <span style="color:var(--gold);">T</span>emporel — محدَّدة في زمن<br><br>
+          <em>مثال: "تنظيم 3 ورشات بيئية قبل نهاية شهر أبريل"</em> ✅<br>
+          <em>مثال: "نساعد البيئة"</em> ❌
+        `)}
+        ${fpCollapsible('fp-audience', '👥 الفئات المستفيدة من النادي', `
+          حدِّد بدقة من سيستفيد من أنشطة ناديك:<br><br>
+          • <strong>داخلياً:</strong> تلاميذ الفوج الواحد؟ كل المستوى؟ كل المؤسسة؟<br>
+          • <strong>خارجياً:</strong> أولياء الأمور؟ الحي؟ مؤسسات أخرى؟<br><br>
+          كلما كانت الفئة أوسع، كلما احتجت موارد أكثر — ابدأ محدَّداً.
+        `)}
+      </div>
+    `,
+    timer: 8,
+    tip: 'ضاق الوقت؟ افتح collapsible واحداً فقط (الأهداف SMART) وناقشوه شفهياً.',
+  },
+
+  /* ── 3. الجمع التأسيسي ───────────────────────────────── */
   {
     title: 'الخطوة 6 — الجمع العام التأسيسي',
     content: `
       <div style="color:white;">
-        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:1rem; margin-bottom:1rem;">
+        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:.85rem 1rem; margin-bottom:.75rem;">
           <strong style="color:var(--accent-bg); font-size:.85rem;">الهدف</strong>
-          <p style="font-size:.88rem; margin-top:.35rem; line-height:1.7; color:rgba(255,255,255,.85);">
-            تأسيس النادي رسمياً عبر انتخاب المكتب وتدوين المحضر.
+          <p style="font-size:.87rem; margin-top:.3rem; line-height:1.7; color:rgba(255,255,255,.85);">
+            تأسيس النادي رسمياً عبر انتخاب المكتب التنفيذي وتدوين المحضر.
           </p>
         </div>
-        <strong style="color:var(--gold); font-size:.9rem;">🛠️ نشاط القسم:</strong>
-        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.5rem; line-height:2; font-size:.88rem; color:rgba(255,255,255,.85);">
-          <li>كل مجموعة تعقد جمعها التأسيسي (محاكاة).</li>
-          <li>تنتخب بالتصويت: رئيساً، كاتباً، خازناً.</li>
-          <li>يملأ الكاتب محضر التأسيس (نموذج ن-02).</li>
-          <li>يُعدُّ إعلان ما بعد التأسيس (نموذج ن-03).</li>
-        </ol>
-        <div style="background:rgba(176,125,58,.2); border:1px solid var(--gold); border-radius:8px; padding:.7rem; margin-top:.75rem; font-size:.82rem; color:rgba(255,255,255,.8);">
-          📎 النماذج: <strong style="color:var(--gold);">ن-02 المحضر التأسيسي + ن-03 إعلان التأسيس</strong>
+        ${say('الآن ننتقل لأكثر لحظة جدية — الانتخابات. هذه ليست لعبة، هذه ممارسة ديمقراطية حقيقية. كل صوت يُحتسب، ولا أحد يُصوِّت لنفسه.')}
+        ${fpCollapsible('fp-vote', '🗳️ إجراءات التصويت — 7 خطوات', `
+          <ol style="padding-right:1.2rem; list-style:decimal; line-height:2.1;">
+            <li>يُعيَّن رئيس مؤقَّت لإدارة الجلسة (أكبر عضو سناً أو بالتراضي).</li>
+            <li>يُقرَّر المناصب التي سيُنتخَب أصحابها (رئيس / نائب الرئيس / كاتب).</li>
+            <li>يُفتح باب الترشُّح — كل من يرغب يُعلن ترشيحه.</li>
+            <li>يُصوِّت كل عضو بكتابة اسم مُرشَّح واحد فقط (غير اسمه هو).</li>
+            <li>يُعدُّ الأصوات الرئيسُ المؤقَّت بحضور الجميع.</li>
+            <li>يفوز من نال الأغلبية المطلقة — عند التعادل يُرجَّح صوت الرئيس المؤقَّت.</li>
+            <li>يُدوِّن الكاتب المُنتخَب النتائج في المحضر (ن-02) فوراً.</li>
+          </ol>
+          <div style="background:rgba(192,57,43,.2); border:1px solid #e74c3c; border-radius:6px; padding:.5rem .7rem; margin-top:.5rem; font-size:.82rem;">
+            ⚠️ <strong>ممنوع التصويت لنفسك</strong> — مبدأ ديمقراطي أساسي يُطبَّق صارماً.
+          </div>
+        `)}
+        <div style="background:rgba(176,125,58,.15); border:1px solid var(--gold); border-radius:8px; padding:.65rem; margin-top:.65rem; font-size:.82rem; color:rgba(255,255,255,.8);">
+          📎 <strong style="color:var(--gold);">ن-02 المحضر التأسيسي + ن-03 إعلان التأسيس</strong>
         </div>
       </div>
     `,
     timer: 12,
-    tip: 'لفت الانتباه: التصويت يكون بالأغلبية المطلقة — عند التعادل يُرجَّح صوت الرئيس المُؤقَّت.',
+    tip: 'ضاق الوقت؟ اقتصر على انتخاب الرئيس فقط شفهياً + كتابة اسمه في ن-02. الباقي يُكمَل لاحقاً.',
   },
+
+  /* ── 4. هيكلة المكتب (جديد) ─────────────────────────── */
+  {
+    title: 'هيكلة المكتب التنفيذي — المناصب والمهام',
+    content: `
+      <div style="color:white;">
+        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:.85rem 1rem; margin-bottom:.75rem;">
+          <strong style="color:var(--accent-bg); font-size:.85rem;">المناصب الرسمية (دليل الحياة المدرسية)</strong>
+          <p style="font-size:.87rem; margin-top:.3rem; line-height:1.7; color:rgba(255,255,255,.85);">
+            المكتب التنفيذي يتكون من 3 مناصب منتخَبة — لا يجوز تعديل البنية الرسمية.
+          </p>
+        </div>
+        ${say('قبل أن يبدأ المنتخَبون مهامهم، يجب أن يعرف كل عضو ماذا يعني منصبه. هذه ليست أسماء فقط — كل منصب له مسؤولية قانونية في الوثائق الرسمية.')}
+        ${fpCollapsible('fp-roles', '👔 مهام كل منصب', `
+          <div style="margin-bottom:.8rem; padding:.6rem; background:rgba(255,255,255,.06); border-radius:8px;">
+            <strong style="color:var(--gold); font-size:.9rem;">الرئيس</strong>
+            <ul style="padding-right:1.1rem; list-style:disc; margin:.3rem 0 0; font-size:.83rem;">
+              <li>يرأس اجتماعات المكتب والجمع العام</li>
+              <li>يُمثِّل النادي أمام الإدارة والشركاء</li>
+              <li>يُوقِّع الوثائق الرسمية باسم النادي</li>
+              <li>يتابع تنفيذ قرارات المكتب</li>
+            </ul>
+          </div>
+          <div style="margin-bottom:.8rem; padding:.6rem; background:rgba(255,255,255,.06); border-radius:8px;">
+            <strong style="color:#a8d4f5; font-size:.9rem;">نائب الرئيس</strong>
+            <ul style="padding-right:1.1rem; list-style:disc; margin:.3rem 0 0; font-size:.83rem;">
+              <li>يُنيب الرئيس عند غيابه بكامل صلاحياته</li>
+              <li>يُنسِّق بين فرق العمل وأعضاء النادي</li>
+              <li>يتابع الجانب اللوجيستي للأنشطة</li>
+            </ul>
+          </div>
+          <div style="padding:.6rem; background:rgba(255,255,255,.06); border-radius:8px;">
+            <strong style="color:#86efac; font-size:.9rem;">الكاتب</strong>
+            <ul style="padding-right:1.1rem; list-style:disc; margin:.3rem 0 0; font-size:.83rem;">
+              <li>يُحرِّر محاضر الاجتماعات (ن-09)</li>
+              <li>يحتفظ بالأرشيف الرسمي للنادي</li>
+              <li>يُعِدُّ المراسلات الإدارية</li>
+            </ul>
+          </div>
+        `)}
+        <div style="background:rgba(176,125,58,.15); border:1px solid var(--gold); border-radius:8px; padding:.65rem; margin-top:.65rem; font-size:.82rem; color:rgba(255,255,255,.8);">
+          💡 المكتب يُنتخَب من <strong>الجمع العام</strong> ويُساءَل أمامه — لا أمام الإدارة مباشرة.
+        </div>
+      </div>
+    `,
+    timer: 8,
+    tip: 'اطلب من كل مجموعة أن يقول المنتخَب لمنصب الكاتب: "أنا مسؤول عن توثيق كل ما يُقرَّر في هذه المجموعة." — يُرسِّخ الوعي بالمسؤولية.',
+  },
+
+  /* ── 5. بناء مشروع النادي ───────────────────────────── */
   {
     title: 'الخطوة 7 — بناء مشروع النادي',
     content: `
       <div style="color:white;">
-        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:1rem; margin-bottom:1rem;">
+        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:.85rem 1rem; margin-bottom:.75rem;">
           <strong style="color:var(--accent-bg); font-size:.85rem;">الهدف</strong>
-          <p style="font-size:.88rem; margin-top:.35rem; line-height:1.7; color:rgba(255,255,255,.85);">
-            صياغة الوثيقة التأسيسية التي تُحدِّد هوية النادي وطريقة اشتغاله.
+          <p style="font-size:.87rem; margin-top:.3rem; line-height:1.7; color:rgba(255,255,255,.85);">
+            صياغة الوثيقة التأسيسية التي تُحدِّد هوية النادي وطريقة اشتغاله (8 محاور).
           </p>
         </div>
-        <strong style="color:var(--gold); font-size:.9rem;">🛠️ نشاط القسم:</strong>
-        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.5rem; line-height:2; font-size:.88rem; color:rgba(255,255,255,.85);">
-          <li>كل مجموعة تملأ بطاقة مشروع النادي (ن-07).</li>
-          <li>التركيز على المحاور: الأهداف + الأنشطة + الفئات + الموارد + التمويل.</li>
-          <li>عرض المشروع أمام الفصل وتلقي الملاحظات.</li>
+        ${say('الآن المنتخَبون يُثبتون كفاءتهم. بطاقة مشروع النادي هي "دستور" ناديكم — 8 محاور، كل محور سؤال تجيبون عليه معاً. من يُديرها؟ الرئيس بالتنسيق مع نائبه.')}
+        <strong style="color:var(--gold); font-size:.88rem;">🛠️ نشاط القسم:</strong>
+        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.45rem; line-height:2; font-size:.87rem; color:rgba(255,255,255,.85);">
+          <li>كل مجموعة تملأ بطاقة مشروع النادي (ن-07) — 8 محاور.</li>
+          <li>التركيز على: <strong>الأهداف + الأنشطة + الفئات + الموارد + التمويل</strong>.</li>
+          <li>عرض المشروع (دقيقتان لكل مجموعة) + أسئلة من الفصل.</li>
         </ol>
-        <div style="background:rgba(176,125,58,.2); border:1px solid var(--gold); border-radius:8px; padding:.7rem; margin-top:.75rem; font-size:.82rem; color:rgba(255,255,255,.8);">
-          📎 النموذج: <strong style="color:var(--gold);">ن-07 — بطاقة عناصر مشروع النادي (8 محاور)</strong>
+        <div style="background:rgba(176,125,58,.15); border:1px solid var(--gold); border-radius:8px; padding:.65rem; margin-top:.65rem; font-size:.82rem; color:rgba(255,255,255,.8);">
+          📎 <strong style="color:var(--gold);">ن-07 — بطاقة عناصر مشروع النادي (8 محاور)</strong>
         </div>
       </div>
     `,
     timer: 15,
-    tip: 'محور التمويل غالباً ما يُهمل — ذكِّر بأن جمعية دعم مدرسة النجاح هي الإطار القانوني الوحيد.',
+    tip: 'محور التمويل دائماً يُهمل — ذكِّر: جمعية دعم مدرسة النجاح هي الإطار القانوني الوحيد لتلقي أي دعم مالي.',
   },
+
+  /* ── 6. التخطيط السنوي ───────────────────────────────── */
   {
     title: 'الخطوة 8 — التخطيط السنوي',
     content: `
       <div style="color:white;">
-        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:1rem; margin-bottom:1rem;">
+        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:.85rem 1rem; margin-bottom:.75rem;">
           <strong style="color:var(--accent-bg); font-size:.85rem;">الهدف</strong>
-          <p style="font-size:.88rem; margin-top:.35rem; line-height:1.7; color:rgba(255,255,255,.85);">
-            ترجمة المشروع إلى برامج وخطط قابلة للتنفيذ والمتابعة.
+          <p style="font-size:.87rem; margin-top:.3rem; line-height:1.7; color:rgba(255,255,255,.85);">
+            ترجمة المشروع إلى برامج وخطط قابلة للتنفيذ والمتابعة — ثلاثة نماذج مكمِّلة.
           </p>
         </div>
-        <strong style="color:var(--gold); font-size:.9rem;">🛠️ نشاط القسم:</strong>
-        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.5rem; line-height:2; font-size:.88rem; color:rgba(255,255,255,.85);">
-          <li>إعداد برنامج العمل السنوي (ن-04): الأنشطة + الفترات + المتدخلون.</li>
-          <li>وضع خطة العمل (ن-05): الأهداف ↔ النتائج المنتظرة ↔ الأنشطة.</li>
-          <li>رسم البرمجة الزمنية (ن-06): Gantt نونبر→يونيو.</li>
-        </ol>
-        <div style="background:rgba(176,125,58,.2); border:1px solid var(--gold); border-radius:8px; padding:.7rem; margin-top:.75rem; font-size:.82rem; color:rgba(255,255,255,.8);">
-          📎 النماذج: <strong style="color:var(--gold);">ن-04 برنامج + ن-05 خطة + ن-06 Gantt</strong>
+        ${say('لديكم الآن ثلاثة نماذج للتخطيط. لكن ما الفرق بينها؟ هذا هو السؤال الذي يُخطئ فيه الكثير من المؤطرين — دعونا نُوضِّح.')}
+        ${fpCollapsible('fp-diff3', '🔍 الفرق بين النماذج الثلاثة (ن-04 / ن-05 / ن-06)', `
+          <div style="margin-bottom:.65rem; padding:.55rem; background:rgba(176,125,58,.15); border-radius:7px;">
+            <strong style="color:var(--gold);">ن-04 — برنامج العمل</strong>
+            <p style="font-size:.82rem; margin:.25rem 0 0; line-height:1.65;">
+              <em>ماذا؟</em> قائمة الأنشطة المُزمَع إنجازها مع التواريخ والمتدخلين.<br>
+              مثل: جدول المواعيد السنوي.
+            </p>
+          </div>
+          <div style="margin-bottom:.65rem; padding:.55rem; background:rgba(44,111,173,.18); border-radius:7px;">
+            <strong style="color:#a8d4f5;">ن-05 — خطة العمل</strong>
+            <p style="font-size:.82rem; margin:.25rem 0 0; line-height:1.65;">
+              <em>لماذا؟</em> ربط كل نشاط بهدفٍ محدَّد ونتيجة منتظرة.<br>
+              مثل: الخريطة التربوية التي تُظهر المنطق.
+            </p>
+          </div>
+          <div style="padding:.55rem; background:rgba(45,106,79,.2); border-radius:7px;">
+            <strong style="color:var(--accent-bg);">ن-06 — البرمجة الزمنية (Gantt)</strong>
+            <p style="font-size:.82rem; margin:.25rem 0 0; line-height:1.65;">
+              <em>متى بالضبط؟</em> توزيع الأنشطة على 12 شهراً (أكتوبر→شتنبر) بصرياً.<br>
+              مثل: التقويم الشهري الذي يُعلَّق على الجدار.
+            </p>
+          </div>
+          <p style="font-size:.8rem; color:rgba(255,255,255,.55); margin-top:.6rem;">
+            الثلاثة ضرورية معاً — لا يُغني أحدها عن الآخر.
+          </p>
+        `)}
+        <div style="background:rgba(176,125,58,.15); border:1px solid var(--gold); border-radius:8px; padding:.65rem; margin-top:.65rem; font-size:.82rem; color:rgba(255,255,255,.8);">
+          📎 <strong style="color:var(--gold);">ن-04 برنامج + ن-05 خطة + ن-06 Gantt (أكتوبر→شتنبر)</strong>
         </div>
       </div>
     `,
     timer: 15,
-    tip: 'نادٍ بدون خطة زمنية (Gantt) لا يتابَع ولا يُقيَّم — إنه من أكثر النماذج التي تُهمل.',
+    tip: 'ضاق الوقت؟ افتح collapsible الفرق فقط، ناقشوه شفهياً، وعيِّن كل مجموعة تملأ ن-04 فقط كواجب.',
   },
+
+  /* ── 7. التنفيذ ──────────────────────────────────────── */
   {
-    title: 'الخطوة 9 — تنفيذ الأنشطة',
+    title: 'الخطوة 9 — تنفيذ الأنشطة وتوثيقها',
     content: `
       <div style="color:white;">
-        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:1rem; margin-bottom:1rem;">
+        <div style="background:rgba(45,106,79,.35); border:1px solid var(--accent-l); border-radius:10px; padding:.85rem 1rem; margin-bottom:.75rem;">
           <strong style="color:var(--accent-bg); font-size:.85rem;">الهدف</strong>
-          <p style="font-size:.88rem; margin-top:.35rem; line-height:1.7; color:rgba(255,255,255,.85);">
-            إنجاز الأنشطة وتوثيقها بالنماذج المناسبة.
+          <p style="font-size:.87rem; margin-top:.3rem; line-height:1.7; color:rgba(255,255,255,.85);">
+            إنجاز الأنشطة وتوثيقها — التنفيذ بدون توثيق كأنه لم يحدث.
           </p>
         </div>
-        <strong style="color:var(--gold); font-size:.9rem;">🛠️ نشاط القسم:</strong>
-        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.5rem; line-height:2; font-size:.88rem; color:rgba(255,255,255,.85);">
+        ${say('سؤال للفصل كله: لماذا يُطالَب المؤطِّر بملء ن-08 لكل نشاط؟ دعوهم يُجيبوا، ثم أكملوا: التوثيق هو دليلكم أمام الإدارة والمفتش والشركاء على أن النادي يشتغل فعلاً.')}
+        <strong style="color:var(--gold); font-size:.88rem;">🛠️ نشاط القسم:</strong>
+        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.45rem; line-height:2; font-size:.87rem; color:rgba(255,255,255,.85);">
           <li>كل مجموعة تختار نشاطاً من برنامجها وتملأ بطاقة النشاط (ن-08).</li>
-          <li>تعقد اجتماعاً مُحاكاةً وتملأ المحضر (ن-09).</li>
-          <li>مناقشة جماعية: ما الفرق بين نشاط موثَّق وآخر غير موثَّق؟</li>
+          <li>تُحاكي اجتماعاً داخلياً وتملأ المحضر (ن-09).</li>
+          <li>مناقشة جماعية: <strong>الفرق بين نشاط موثَّق وآخر غير موثَّق؟</strong></li>
         </ol>
-        <div style="background:rgba(176,125,58,.2); border:1px solid var(--gold); border-radius:8px; padding:.7rem; margin-top:.75rem; font-size:.82rem; color:rgba(255,255,255,.8);">
-          📎 النماذج: <strong style="color:var(--gold);">ن-08 بطاقة النشاط + ن-09 محضر الاجتماع</strong>
+        <div style="background:rgba(176,125,58,.15); border:1px solid var(--gold); border-radius:8px; padding:.65rem; margin-top:.65rem; font-size:.82rem; color:rgba(255,255,255,.8);">
+          📎 <strong style="color:var(--gold);">ن-08 بطاقة النشاط + ن-09 محضر الاجتماع</strong>
         </div>
       </div>
     `,
     timer: 12,
-    tip: 'اطرح السؤال: لماذا نحتاج محضراً لكل اجتماع؟ من يستفيد منه؟ (الإدارة، الشركاء، التقييم...).',
+    tip: 'ضاق الوقت؟ ن-09 فقط — اجتماع محاكاة + محضر = أسرع وأكثر إثارة من بطاقة النشاط.',
   },
+
+  /* ── 8. التقويم ──────────────────────────────────────── */
   {
     title: 'الخطوات 10-11 — التقويم',
     content: `
       <div style="color:white;">
-        <div style="background:rgba(107,70,193,.3); border:1px solid var(--violet); border-radius:10px; padding:1rem; margin-bottom:1rem;">
+        <div style="background:rgba(107,70,193,.3); border:1px solid var(--violet); border-radius:10px; padding:.85rem 1rem; margin-bottom:.75rem;">
           <strong style="color:#c4b5fd; font-size:.85rem;">الهدف</strong>
-          <p style="font-size:.88rem; margin-top:.35rem; line-height:1.7; color:rgba(255,255,255,.85);">
-            تقييم ما أنجزه النادي واستخلاص الدروس للمستقبل.
+          <p style="font-size:.87rem; margin-top:.3rem; line-height:1.7; color:rgba(255,255,255,.85);">
+            تقييم ما أنجزه النادي واستخلاص الدروس للمستقبل — التقويم ليس عقاباً بل دليلُ نضج.
           </p>
         </div>
-        <strong style="color:var(--gold); font-size:.9rem;">🛠️ نشاط القسم:</strong>
-        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.5rem; line-height:2; font-size:.88rem; color:rgba(255,255,255,.85);">
-          <li>كل مجموعة تملأ بطاقة تقويم حصيلة ناديها (ن-10).</li>
+        ${say('وصلنا للمرحلة الأهم: التقويم. هذه المرحلة هي ما يُفرِّق نادياً جاداً عن نادٍ يشتغل بدون بوصلة. ن-10 لكل نادٍ على حدة، ون-11 للمُيسِّر يُجمِّع الصورة الكاملة.')}
+        <strong style="color:var(--gold); font-size:.88rem;">🛠️ نشاط القسم:</strong>
+        <ol style="padding-right:1.3rem; list-style:decimal; margin-top:.45rem; line-height:2; font-size:.87rem; color:rgba(255,255,255,.85);">
+          <li>كل مجموعة تملأ بطاقة تقويم حصيلة ناديها (ن-10) — بصدق.</li>
           <li>عرض نتائج التقويم أمام الفصل.</li>
           <li>المُيسِّر يُوحِّد الحصيلة على مستوى "المؤسسة" (ن-11).</li>
-          <li>نقاش ختامي: ما الذي يجعل النادي ناجحاً؟</li>
+          <li>نقاش: <strong>ما الذي يجعل النادي ناجحاً حقاً؟</strong></li>
         </ol>
-        <div style="background:rgba(176,125,58,.2); border:1px solid var(--gold); border-radius:8px; padding:.7rem; margin-top:.75rem; font-size:.82rem; color:rgba(255,255,255,.8);">
-          📎 النماذج: <strong style="color:var(--gold);">ن-10 تقويم النادي + ن-11 تقويم الأندية (مستوى المؤسسة)</strong>
+        <div style="background:rgba(176,125,58,.15); border:1px solid var(--gold); border-radius:8px; padding:.65rem; margin-top:.65rem; font-size:.82rem; color:rgba(255,255,255,.8);">
+          📎 <strong style="color:var(--gold);">ن-10 تقويم النادي + ن-11 تقويم الأندية (مستوى المؤسسة)</strong>
         </div>
       </div>
     `,
     timer: 15,
-    tip: 'الختام المهم: اطلب من كل مجموعة أن تُسمِّي شيئاً واحداً تعلَّمته لن تنساه — يُعزِّز الأثر التربوي.',
+    tip: 'الختام: اطلب من كل مجموعة أن تُسمِّي شيئاً واحداً تعلَّمته لن تنساه — يُعزِّز الأثر التربوي ويختم الجلسة بقوة.',
   },
+
+  /* ── 9. الخلاصة + SOS ───────────────────────────────── */
   {
-    title: 'خلاصة المسار',
+    title: 'خلاصة المسار + طوارئ المُيسِّر',
     content: `
-      <div style="color:white; text-align:center; padding:1rem 0;">
-        <div style="font-size:2.5rem; margin-bottom:.75rem;">🎉</div>
-        <h3 style="color:var(--gold); margin-bottom:1rem;">مسار الإحداث كاملاً</h3>
-        <div style="text-align:right; background:rgba(255,255,255,.06); border-radius:10px; padding:1rem; font-size:.85rem; line-height:2.2;">
+      <div style="color:white;">
+        <div style="text-align:center; margin-bottom:.85rem;">
+          <div style="font-size:2rem; margin-bottom:.3rem;">🎉</div>
+          <h3 style="color:var(--gold); font-size:1rem; margin:0;">مسار الإحداث كاملاً</h3>
+        </div>
+        <div style="background:rgba(255,255,255,.05); border-radius:10px; padding:.75rem; font-size:.82rem; line-height:2; margin-bottom:1rem;">
           ${[
             ['ن-01', 'إعلان العزم على التأسيس'],
             ['ن-02', 'محضر الجمع التأسيسي'],
             ['ن-03', 'إعلان ما بعد التأسيس'],
             ['ن-07', 'بطاقة مشروع النادي'],
-            ['ن-04+05+06', 'التخطيط السنوي (برنامج + خطة + Gantt)'],
+            ['ن-04+05+06', 'التخطيط (برنامج + خطة + Gantt)'],
             ['ن-08+09', 'التنفيذ (بطاقة النشاط + المحضر)'],
             ['ن-10+11', 'التقويم (النادي + المؤسسة)'],
           ].map(([n, t]) => `
-            <div style="display:flex; align-items:center; gap:.6rem; padding:.25rem 0; border-bottom:1px solid rgba(255,255,255,.08);">
-              <span style="background:var(--accent); color:white; font-size:.68rem; padding:2px 6px; border-radius:4px; flex-shrink:0;">${n}</span>
-              <span style="font-size:.85rem;">${t}</span>
+            <div style="display:flex; align-items:center; gap:.55rem; padding:.18rem 0; border-bottom:1px solid rgba(255,255,255,.07);">
+              <span style="background:var(--accent); color:white; font-size:.66rem; padding:2px 5px; border-radius:4px; flex-shrink:0;">${n}</span>
+              <span>${t}</span>
             </div>`).join('')}
         </div>
+        ${fpCollapsible('fp-sos', '🚨 طوارئ المُيسِّر — SOS', `
+          <p style="font-size:.82rem; margin-bottom:.65rem; color:rgba(255,255,255,.6);">من الخبرة الميدانية — ليست في الدليل الرسمي:</p>
+          ${[
+            ['المجموعة ترفض الانتخابات ("كلنا رئيس")',
+             'أوضح أن هذا النموذج يعكس الواقع المؤسسي — بدون رئيس لا توجد وثيقة رسمية موقَّعة. الانتخاب شرط لا خيار.'],
+            ['لا أحد يريد أن يترشح لمنصب الكاتب',
+             'قل: "الكاتب هو أكثر شخص يُؤثِّر على مستقبل النادي — لأن ما لا يُكتب لا يُحتسب." ثم أعطِ مثالاً واقعياً.'],
+            ['مجموعة لا تعرف ماذا تختار كمجال لناديها',
+             'قدِّم قائمة سريعة من بنك الأنشطة — اسأل: ما الذي يُزعجكم في مدرستكم؟ هناك ناديكم.'],
+            ['أحد الطلاب يُهيمن على مجموعته ويمنع التصويت',
+             'تدخَّل بلطف: "الجمع العام يعني أن كل صوت يُحتسب — ليس صوت الأعلى صوتاً."'],
+            ['وقت أقل من المتوقع — خطوات لم تُغطَّ',
+             'اجمع الخطوات المتبقية في جولة "عرض مُسرَّع": كل مجموعة تُسمِّي النموذج المقابل لكل خطوة بدون ملء — يكفي للتعريف.'],
+          ].map(([prob, sol]) => `
+            <div style="margin-bottom:.75rem; padding:.6rem; background:rgba(192,57,43,.12); border-right:3px solid #e74c3c; border-radius:0 7px 7px 0;">
+              <strong style="font-size:.82rem; color:#ff9a9a;">⚠ ${prob}</strong>
+              <p style="font-size:.8rem; margin:.25rem 0 0; line-height:1.65; color:rgba(255,255,255,.8);">${sol}</p>
+            </div>`).join('')}
+        `)}
       </div>
     `,
     timer: null,
-    tip: 'للحفظ: الذاكرة "أسست النادي ↔ خطَّط ↔ نفَّذ ↔ قيَّم" — كل حلقة لها بطاقة.',
+    tip: 'للحفظ: "أسَّس ↔ خطَّط ↔ نفَّذ ↔ قيَّم" — كل حلقة لها بطاقة. الدورة تتكرر كل سنة.',
   },
 ];
 
@@ -723,7 +1062,7 @@ function bindFacilitator() {
   // Close button
   document.getElementById('btn-exit-facilitator').addEventListener('click', closeFacilitator);
 
-  // Navigation
+  // Navigation buttons
   document.getElementById('btn-prev').addEventListener('click', () => {
     if (state.facilitatorSlide > 0) {
       state.facilitatorSlide--;
@@ -737,6 +1076,26 @@ function bindFacilitator() {
       showSlide(state.facilitatorSlide);
     }
   });
+
+  // Swipe support (mobile)
+  const content = document.getElementById('facilitator-content');
+  let touchStartX = 0;
+  content.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].clientX;
+  }, { passive: true });
+  content.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) < 40) return; // ignore small movements
+    if (dx > 0 && state.facilitatorSlide > 0) {
+      // swipe right → previous (RTL: swipe right = go forward in reading direction = previous slide)
+      state.facilitatorSlide--;
+      showSlide(state.facilitatorSlide);
+    } else if (dx < 0 && state.facilitatorSlide < FACILITATOR_SLIDES.length - 1) {
+      // swipe left → next
+      state.facilitatorSlide++;
+      showSlide(state.facilitatorSlide);
+    }
+  }, { passive: true });
 }
 
 function openFacilitator() {
