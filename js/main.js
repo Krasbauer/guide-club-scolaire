@@ -1,6 +1,6 @@
 /* =====================================================
    main.js — Navigation, routing, rendering
-   الأندية التربوية — دليل مرجعي CRMEF
+   Guide Club Scolaire — الأندية التربوية
    ===================================================== */
 
 /* ── State ─────────────────────────────────────────── */
@@ -64,13 +64,13 @@ function navigateTo(id, push = true) {
   });
 
   const titles = {
-    home:    'الأندية التربوية',
+    home:    'Guide Club Scolaire',
     concept: 'المفهوم والأهداف',
     parcours:'مسار الإحداث',
     fiches:  'البطاقات والنماذج',
     legal:   'المرجعية القانونية',
   };
-  document.getElementById('top-bar-title').textContent = titles[id] || 'الأندية التربوية';
+  document.getElementById('top-bar-title').textContent = titles[id] || 'Guide Club Scolaire';
   window.scrollTo(0, 0);
 
   if (push) history.pushState({ section: id, modal: null, facilitator: false }, '', '#' + id);
@@ -88,8 +88,8 @@ function renderHome() {
   el.innerHTML = `
     <div style="text-align:center; padding:1.5rem 0 1rem;">
       <div style="font-size:2.5rem; margin-bottom:.5rem;">🏫</div>
-      <h1 style="color:var(--accent); font-size:1.3rem;">الأندية التربوية</h1>
-      <p class="text-muted" style="font-size:.83rem; margin-top:.35rem;">دليل مرجعي — مديرية الحياة المدرسية 2019</p>
+      <h1 style="color:var(--accent); font-size:1.3rem;">Guide Club Scolaire</h1>
+      <p class="text-muted" style="font-size:.83rem; margin-top:.35rem;">الأندية التربوية — دليل الحياة المدرسية 2019</p>
       <span style="display:inline-block; background:var(--accent-bg); color:var(--accent); font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:20px; margin-top:.4rem;">
         دليل مرجعي معتمد
       </span>
@@ -695,7 +695,7 @@ function fpCollapsible(id, label, body) {
 const FACILITATOR_SLIDES = [
   /* ── 0. Intro ─────────────────────────────────────────── */
   {
-    title: 'وضع المُيسِّر — الأندية التربوية',
+    title: 'وضع المُيسِّر — Guide Club Scolaire',
     content: `
       <div style="text-align:center; color:white; padding:1rem 0 .5rem;">
         <div style="font-size:3rem; margin-bottom:.5rem;">🎯</div>
