@@ -1173,12 +1173,12 @@ let _installPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   _installPrompt = e;
-  document.getElementById('btn-install').style.display = '';
+  document.getElementById('btn-install').classList.add('visible');
 });
 
 window.addEventListener('appinstalled', () => {
   _installPrompt = null;
-  document.getElementById('btn-install').style.display = 'none';
+  document.getElementById('btn-install').classList.remove('visible');
 });
 
 function installApp() {

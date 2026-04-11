@@ -80,6 +80,23 @@ p  { line-height: 1.75; }
   font-weight: 700;
   color: var(--accent);
 }
+.btn-install {
+  display: none;
+  align-items: center;
+  gap: .3rem;
+  margin-inline-start: auto;
+  padding: .3rem .7rem;
+  border: 1.5px solid var(--accent);
+  border-radius: 20px;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-bg);
+  white-space: nowrap;
+  transition: background .15s;
+}
+.btn-install:hover { background: #b7e4c7; }
+.btn-install.visible { display: flex; }
 
 /* Main content area */
 main {
