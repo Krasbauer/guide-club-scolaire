@@ -808,7 +808,7 @@ function showLegalView(view) {
 
     el.innerHTML = `
       <div class="legal-section-header">
-        <h2 class="legal-section-title">المرجعيات المؤطرة للأندية التربوية</h2>
+        <h1 class="legal-section-title">المرجعيات المؤطرة للأندية التربوية</h1>
         <p class="legal-section-sub">3 أصناف · ${Object.keys(window.LEGAL_DOCS).length} مرجعاً</p>
       </div>
       <div class="legal-cats-list">
