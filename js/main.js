@@ -1333,7 +1333,7 @@ function toggleFillMode() {
 
   if (state.fillMode) {
     btn.textContent = '👁 عرض النموذج';
-    const fillHtml = f.id === 'F-08' ? buildFillableF08() : buildFillableGeneric(f.id);
+    const fillHtml = buildFillableGeneric(f.id);
     document.getElementById('modal-body').innerHTML = ctxHtml + fillHtml;
     loadFillable(f.id);
     bindFillableInputs(f.id);
@@ -1404,98 +1404,6 @@ function buildFillableGeneric(ficheId) {
 </div>`;
 }
 
-function buildFillableF08() {
-  const inp = (key, placeholder='', extra='') =>
-    `<input class="fi-input" data-fkey="${key}" placeholder="${placeholder}" autocomplete="off" ${extra}>`;
-  const cell = (key) =>
-    `<div class="fi-cell" data-fkey="${key}" contenteditable="true"></div>`;
-
-  const hasSaved = !!localStorage.getItem('fill-F-08');
-  const savedBadge = hasSaved
-    ? `<span class="fi-saved-badge">💾 يوجد حفظ مسبق</span>`
-    : '';
-
-  return `<div class="fiche-preview fiche-fillable" id="fiche-fill-F-08">
-
-  <div class="fi-toolbar no-print">
-    <span class="fi-toolbar-label">✏️ وضع الملء ${savedBadge}</span>
-    <button class="fi-btn-clear" onclick="clearFillable('F-08')">🗑️ مسح</button>
-    <button class="fi-btn-print" onclick="printFillable('F-08')">🖨️ طباعة</button>
-  </div>
-
-  <div class="fp-title">بطاقة نشاط النادي</div>
-
-  <div class="fp-header">
-    <div class="fp-hrow">
-      <span class="fp-hlabel">الأكاديمية :</span>${inp('academy','...')}
-      <span class="fp-hlabel">المديرية الإقليمية :</span>${inp('direction','...')}
-    </div>
-    <div class="fp-hrow">
-      <span class="fp-hlabel">المؤسسة :</span>${inp('institution','...')}
-      <span class="fp-hlabel">النادي :</span>${inp('club','...')}
-    </div>
-    <div class="fp-hrow" style="justify-content:center;">
-      <span class="fp-hlabel">الموسم الدراسي :</span>
-      ${inp('year','2024 / 2025','style="text-align:center; max-width:140px;"')}
-    </div>
-  </div>
-
-  <div class="fi-field-row">
-    <span class="fp-star-key">* رقم النشاط :</span>
-    ${inp('num','كما هو وارد في برنامج العمل')}
-  </div>
-  <div class="fi-field-row">
-    <span class="fp-star-key">* موضوعه :</span>
-    ${inp('subject','...')}
-  </div>
-  <div class="fi-field-col">
-    <span class="fp-star-key">* أهدافه :</span>
-    <textarea class="fi-textarea" data-fkey="goals" rows="3" placeholder="اكتب أهداف النشاط — سطر لكل هدف"></textarea>
-  </div>
-  <div class="fi-field-row">
-    <span class="fp-star-key">* الفئات المستفيدة :</span>
-    ${inp('beneficiaries','...')}
-  </div>
-
-  <table class="fp-table fi-table" style="margin-top:.7rem;">
-    <thead>
-      <tr>
-        <th>العمليات المبرمجة</th>
-        <th>فترات الإنجاز</th>
-        <th>الوسائل المعينة</th>
-        <th>المسؤولون عن الإنجاز</th>
-        <th>المتدخلون</th>
-        <th>التمويل</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${[1,2,3,4,5].map(r =>
-        `<tr>${[0,1,2,3,4,5].map(c =>
-          `<td>${cell('t'+r+'c'+c)}</td>`
-        ).join('')}</tr>`
-      ).join('')}
-    </tbody>
-  </table>
-
-  <div style="margin-top:1rem; font-weight:700; font-size:.82rem; text-align:center; border-bottom:1px solid #ccc; padding-bottom:.3rem;">— الصفحة الثانية —</div>
-
-  <div class="fp-eval-grid" style="margin-top:.5rem;">
-    <div style="border-left:1px solid #333;">
-      <div class="fp-eval-head">النتائج المحققة</div>
-      <div class="fp-eval-body" style="padding:.4rem;">
-        <textarea class="fi-textarea fi-textarea-full" data-fkey="results" rows="9" placeholder="النتائج المحققة…"></textarea>
-      </div>
-    </div>
-    <div>
-      <div class="fp-eval-head">تقويم النشاط</div>
-      <div class="fp-eval-body" style="padding:.4rem;">
-        <textarea class="fi-textarea fi-textarea-full" data-fkey="evaluation" rows="9" placeholder="تقويم النشاط…"></textarea>
-      </div>
-    </div>
-  </div>
-
-</div>`;
-}
 
 function bindFillableInputs(ficheId) {
   let debounce;
