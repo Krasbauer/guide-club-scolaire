@@ -133,7 +133,7 @@ function renderHome() {
       <div class="home-chips">
         <span class="home-chip">11 خطوة إحداث</span>
         <span class="home-chip">11 نموذجاً رسمياً</span>
-        <span class="home-chip">14 مرجعاً قانونياً</span>
+        <span class="home-chip">${Object.keys(window.LEGAL_DOCS).length} مرجعاً قانونياً</span>
         <span class="home-chip">🎯 وضع المُيسِّر</span>
       </div>
     </div>
@@ -211,7 +211,7 @@ function renderHome() {
         <span class="card-icon">⚖️</span>
         <div class="card-body">
           <div class="card-title">القانون</div>
-          <div class="card-sub">3 أصناف · 14 مرجعاً قانونياً</div>
+          <div class="card-sub">3 أصناف · ${Object.keys(window.LEGAL_DOCS).length} مرجعاً قانونياً</div>
         </div>
         <span class="card-arrow">‹</span>
       </div>
@@ -751,9 +751,10 @@ function renderLegal() {
 }
 
 function legalDocCount(cat) {
-  if (cat.docs) return cat.docs.length;
-  if (cat.subcats) return cat.subcats.reduce((n, s) => n + s.docs.length, 0);
-  return 0;
+  const n = cat.docs
+    ? cat.docs.length
+    : (cat.subcats || []).reduce((t, s) => t + s.docs.length, 0);
+  return n >= 11 ? n + ' مرجعاً' : n >= 3 ? n + ' مراجع' : n + ' مرجع';
 }
 
 function legalFindCat(docId) {
@@ -842,7 +843,7 @@ function showLegalView(view) {
     }
 
     el.innerHTML = `
-      <button class="legal-back-btn" onclick="showLegalView('list')">← رجوع</button>
+      <button class="legal-back-btn" onclick="showLegalView('list')">رجوع →</button>
       <div class="legal-cat-page-title">${cat.title}</div>
       ${content}
     `;
@@ -904,7 +905,7 @@ function showLegalView(view) {
     }
 
     el.innerHTML = `
-      <button class="legal-back-btn" onclick="showLegalView('cat:${catId}')">← رجوع</button>
+      <button class="legal-back-btn" onclick="showLegalView('cat:${catId}')">رجوع →</button>
       <div class="legal-doc-page">
         <h2 class="legal-doc-title">${d.title}</h2>
         <div class="legal-doc-meta">
