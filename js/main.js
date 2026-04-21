@@ -10,10 +10,44 @@ const state = {
   modalFiche: null,
   showInstitutional: true,
   fillMode: false,
+  legalView: 'list',
 };
 
 /* ── Section ids ────────────────────────────────────── */
 const SECTIONS = ['home', 'concept', 'parcours', 'fiches', 'legal'];
+
+/* ── Analytics ──────────────────────────────────────── */
+const STATS_NS = 'clubs-scolaires';
+const STATS_API = 'https://api.counterapi.dev/v1/' + STATS_NS;
+const STATS_KEYS = ['visits', 'pdf-downloads', 'docx-downloads', 'installs'];
+
+function trackEvent(key) {
+  const cached = JSON.parse(localStorage.getItem('stats') || '{}');
+  cached[key] = (cached[key] || 0) + 1;
+  localStorage.setItem('stats', JSON.stringify(cached));
+  fetch(STATS_API + '/' + key + '/up').then(r => r.json()).then(d => {
+    cached[key] = d.count;
+    localStorage.setItem('stats', JSON.stringify(cached));
+    const el = document.getElementById('stat-' + key);
+    if (el) el.textContent = d.count.toLocaleString('en');
+  }).catch(() => {});
+}
+
+function fetchStats() {
+  const cached = JSON.parse(localStorage.getItem('stats') || '{}');
+  STATS_KEYS.forEach(key => {
+    const el = document.getElementById('stat-' + key);
+    if (el && cached[key]) el.textContent = Number(cached[key]).toLocaleString('en');
+    fetch(STATS_API + '/' + key).then(r => r.json()).then(d => {
+      const updated = JSON.parse(localStorage.getItem('stats') || '{}');
+      updated[key] = d.count;
+      localStorage.setItem('stats', JSON.stringify(updated));
+      if (el) el.textContent = d.count.toLocaleString('en');
+    }).catch(() => {});
+  });
+}
+
+window.addEventListener('appinstalled', () => trackEvent('installs'));
 
 /* ── Init ───────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
@@ -26,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bindFacilitator();
   bindBackButton();
   bindSearch();
+  trackEvent('visits');
+  fetchStats();
 
   // Restore section from URL hash on load, else default to home
   const initial = SECTIONS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home';
@@ -97,8 +133,31 @@ function renderHome() {
       <div class="home-chips">
         <span class="home-chip">11 خطوة إحداث</span>
         <span class="home-chip">11 نموذجاً رسمياً</span>
-        <span class="home-chip">6 مراجع قانونية</span>
+        <span class="home-chip">14 مرجعاً قانونياً</span>
         <span class="home-chip">🎯 وضع المُيسِّر</span>
+      </div>
+    </div>
+
+    <!-- Stats card -->
+    <div class="stats-card">
+      <div class="stats-title">إحصاءات الاستخدام</div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-num" id="stat-visits">---</span>
+          <span class="stat-label">زيارة</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" id="stat-pdf-downloads">---</span>
+          <span class="stat-label">تحميل PDF</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" id="stat-docx-downloads">---</span>
+          <span class="stat-label">تحميل DOCX</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" id="stat-installs">---</span>
+          <span class="stat-label">تثبيت</span>
+        </div>
       </div>
     </div>
 
@@ -152,7 +211,7 @@ function renderHome() {
         <span class="card-icon">⚖️</span>
         <div class="card-body">
           <div class="card-title">القانون</div>
-          <div class="card-sub">6 نصوص قانونية مُهيكِلة</div>
+          <div class="card-sub">3 أصناف · 14 مرجعاً قانونياً</div>
         </div>
         <span class="card-arrow">‹</span>
       </div>
@@ -641,12 +700,14 @@ function openFiche(id) {
   docxBtn.href = 'fiches-docx/' + f.id + '.docx';
   docxBtn.setAttribute('download', f.num + ' — ' + f.title + '.docx');
   docxBtn.style.display = '';
+  docxBtn.onclick = () => trackEvent('docx-downloads');
 
   // PDF button
   const pdfBtn = document.getElementById('modal-pdf-btn');
   pdfBtn.href = 'fiches-pdf/' + f.id + '.pdf';
   pdfBtn.setAttribute('download', f.num + ' — ' + f.title + '.pdf');
   pdfBtn.style.display = '';
+  pdfBtn.onclick = () => trackEvent('pdf-downloads');
 
   document.getElementById('fiche-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -686,52 +747,183 @@ function printFiche() {
 
 /* ── Legal ───────────────────────────────────────────── */
 function renderLegal() {
+  showLegalView('list');
+}
+
+function legalDocCount(cat) {
+  if (cat.docs) return cat.docs.length;
+  if (cat.subcats) return cat.subcats.reduce((n, s) => n + s.docs.length, 0);
+  return 0;
+}
+
+function legalFindCat(docId) {
+  for (const cat of window.LEGAL_TREE) {
+    if (cat.docs && cat.docs.includes(docId)) return cat.id;
+    if (cat.subcats) {
+      for (const sub of cat.subcats) {
+        if (sub.docs.includes(docId)) return cat.id;
+      }
+    }
+  }
+  return '1';
+}
+
+function legalDocRow(id) {
+  const d = window.LEGAL_DOCS[id];
+  if (!d) return '';
+  return `
+    <div class="legal-doc-row" onclick="showLegalView('doc:${id}')">
+      <div class="legal-doc-row-body">
+        <div class="legal-doc-row-title">${d.title}</div>
+        <div class="legal-doc-row-sub">${d.date}</div>
+      </div>
+      ${d.download ? '<span class="legal-dl-badge">PDF</span>' : ''}
+      <span class="legal-doc-row-arrow">‹</span>
+    </div>`;
+}
+
+function showLegalView(view) {
+  state.legalView = view;
   const el = document.getElementById('section-legal');
-  const categories = window.LEGAL_CATEGORIES;
-  const texts = window.LEGAL;
+  if (!el) return;
 
-  const sections = categories.map(cat => {
-    const catTexts = texts.filter(t => t.category === cat.id);
-    const cards = catTexts.map(t => `
-      <div class="legal-card">
-        <div class="legal-card-header">
-          <div class="legal-num" style="background:${cat.bg}; color:${cat.color};">${t.num}</div>
-          <div class="legal-info">
-            <div class="legal-title">${t.title}</div>
-            <div class="legal-date">${t.subtitle} &nbsp;·&nbsp; ${t.date}</div>
-          </div>
+  if (view === 'list') {
+    const cats = window.LEGAL_TREE;
+    const allDlDocs = Object.entries(window.LEGAL_DOCS).filter(([, d]) => d.download);
+    const dlBlock = allDlDocs.length ? `
+      <div class="legal-dl-block">
+        <div class="legal-dl-block-title" onclick="this.parentElement.classList.toggle('open')">
+          <span>التنزيلات المتاحة (${allDlDocs.length})</span>
+          <span class="legal-dl-chev">▾</span>
         </div>
-        <div class="legal-body">
-          <p style="font-size:.85rem; line-height:1.75; color:var(--txt-muted);">${t.context}</p>
-          <div class="legal-key-articles">
-            <strong>الأحكام ذات الصلة بالأندية:</strong>
-            <ul style="padding-right:1.1rem; list-style:disc; line-height:1.9;">
-              ${t.keyArticles.map(a => `<li>${a}</li>`).join('')}
-            </ul>
-          </div>
-          <p style="font-size:.8rem; color:var(--txt-muted); margin-top:.6rem; font-style:italic; line-height:1.6;">
-            ◀ ${t.relevance}
+        <div class="legal-dl-list">
+          ${allDlDocs.map(([, d]) => `
+            <a class="legal-dl-item" href="${d.download}" download>
+              <span>📥</span>
+              <span>${d.title}</span>
+            </a>`).join('')}
+        </div>
+      </div>` : '';
+
+    el.innerHTML = `
+      <div class="legal-section-header">
+        <h2 class="legal-section-title">المرجعيات المؤطرة للأندية التربوية</h2>
+        <p class="legal-section-sub">3 أصناف · ${Object.keys(window.LEGAL_DOCS).length} مرجعاً</p>
+      </div>
+      <div class="legal-cats-list">
+        ${cats.map((cat, i) => `
+          <div class="legal-cat-card" onclick="showLegalView('cat:${cat.id}')">
+            <div class="legal-cat-card-num">${i + 1}</div>
+            <div class="legal-cat-card-body">
+              <div class="legal-cat-card-title">${cat.title}</div>
+              <div class="legal-cat-card-count">${legalDocCount(cat)} مرجعاً</div>
+            </div>
+            <span class="legal-cat-card-arrow">‹</span>
+          </div>`).join('')}
+      </div>
+      ${dlBlock}
+    `;
+    return;
+  }
+
+  if (view.startsWith('cat:')) {
+    const catId = view.slice(4);
+    const cat = window.LEGAL_TREE.find(c => c.id === catId);
+    if (!cat) { showLegalView('list'); return; }
+
+    let content = '';
+    if (cat.subcats) {
+      content = cat.subcats.map(sub => `
+        <div class="legal-subcat-label">${sub.id} — ${sub.title}</div>
+        ${sub.docs.map(legalDocRow).join('')}
+      `).join('');
+    } else {
+      content = (cat.docs || []).map(legalDocRow).join('');
+    }
+
+    el.innerHTML = `
+      <button class="legal-back-btn" onclick="showLegalView('list')">← رجوع</button>
+      <div class="legal-cat-page-title">${cat.title}</div>
+      ${content}
+    `;
+    el.scrollTop = 0;
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  if (view.startsWith('doc:')) {
+    const docId = view.slice(4);
+    const d = window.LEGAL_DOCS[docId];
+    if (!d) { showLegalView('list'); return; }
+    const catId = legalFindCat(docId);
+
+    const extractsHtml = d.extracts.map(e => `<li>${e}</li>`).join('');
+
+    const downloadHtml = d.download ? `
+      <a class="legal-download-btn" href="${d.download}" download>
+        📥 تحميل الوثيقة (PDF)
+      </a>` : '';
+
+    let specialHtml = '';
+    if (d.special === 'kharitat-obj3') {
+      specialHtml = `
+        <div class="legal-special-box">
+          <div class="legal-special-box-label">الهدف الاستراتيجي 3 — تحقيق إلزامية التعليم</div>
+          <p>يُركِّز هذا الهدف على ثلاثة محاور: التعلمات الأساسية، <strong>الأنشطة الموازية</strong>، والحد من الهدر المدرسي.</p>
+          <p style="margin-top:.5rem; font-size:.82rem; color:var(--accent);">الهدف الكمي بحلول 2026: <strong>مضاعفة نسبة التلاميذ المستفيدين من الأنشطة الموازية</strong></p>
+        </div>`;
+    }
+    if (d.special === 'itaar-grid') {
+      const programs = [
+        'التعليم الأولي','التعليم الابتدائي','التعليم الثانوي الإعدادي والتأهيلي',
+        'الأنشطة الموازية','ظروف الاستقبال بالمؤسسات التعليمية','مشروع المؤسسة المندمج',
+        'الأنشطة الاعتيادية بالسلك الابتدائي','مناهج التعليم الثانوي','ترشيد المسالك الدراسية',
+        'مسارات متنوعة','الدعم الاجتماعي','الصحة المدرسية',
+        'المدارس الدامجة','نظام أساسي موحد','الارتقاء المهني للمدرسين',
+        'التكوين الأساس بمراكز التكوين','التنظيم — الحوض المدرسي','القيادة ولوحة التتبع',
+        'إدماج التخطيط والميزنة والتنفيذ','الالتزام والتواصل',
+      ];
+      const highlight = [3, 5]; // 0-indexed: P4 = index 3, P6 = index 5
+      const cells = programs.map((p, i) => {
+        const isHL = highlight.includes(i);
+        return `<div class="itaar-cell${isHL ? ' itaar-cell-highlight' : ''}">
+          <span class="itaar-cell-num">${i + 1}</span>
+          <span class="itaar-cell-name">${p}</span>
+          ${isHL ? `<span class="itaar-cell-star">★</span>` : ''}
+        </div>`;
+      }).join('');
+      specialHtml = `
+        <div class="legal-special-box itaar-box">
+          <div class="legal-special-box-label">الإطار الإجرائي — 20 برنامجاً</div>
+          <div class="itaar-grid">${cells}</div>
+          <p class="itaar-caption">
+            ★ <strong>البرنامج 4 — الأنشطة الموازية:</strong> الإطار المباشر للأندية التربوية<br>
+            ★ <strong>البرنامج 6 — مشروع المؤسسة المندمج:</strong> الأندية جزء من المشروع المؤسسي
           </p>
-        </div>
-      </div>`).join('');
+        </div>`;
+    }
 
-    return `
-      <div class="legal-category">
-        <div class="legal-cat-header" style="border-right:3px solid ${cat.color}; background:${cat.bg};">
-          <span class="legal-cat-label" style="color:${cat.color};">${cat.label}</span>
-          ${cat.priority ? `<span class="legal-cat-badge">الأكثر أهمية عملياً</span>` : ''}
-          <p class="legal-cat-desc">${cat.desc}</p>
+    el.innerHTML = `
+      <button class="legal-back-btn" onclick="showLegalView('cat:${catId}')">← رجوع</button>
+      <div class="legal-doc-page">
+        <h2 class="legal-doc-title">${d.title}</h2>
+        <div class="legal-doc-meta">
+          <span class="legal-doc-date">${d.date}</span>
+          <span class="legal-doc-issuer">${d.issuer}</span>
         </div>
-        ${cards}
-      </div>`;
-  }).join('');
-
-  el.innerHTML = `
-    <p class="section-intro">
-      6 نصوص قانونية مُصنَّفة حسب مستواها — من التأسيس الفلسفي إلى الإجراء العملي. ابدأ بالمستوى التنظيمي إذا كنت تريد تأسيس نادٍ فوراً.
-    </p>
-    ${sections}
-  `;
+        <p class="legal-doc-context">${d.context}</p>
+        ${specialHtml}
+        <div class="legal-extracts">
+          <div class="legal-extracts-label">الصلة بالأندية التربوية</div>
+          <ul class="legal-extracts-list">${extractsHtml}</ul>
+        </div>
+        ${downloadHtml}
+      </div>
+    `;
+    el.scrollTop = 0;
+    window.scrollTo(0, 0);
+    return;
+  }
 }
 
 /* ── Facilitator mode ────────────────────────────────── */
@@ -1141,13 +1333,75 @@ function toggleFillMode() {
 
   if (state.fillMode) {
     btn.textContent = '👁 عرض النموذج';
-    document.getElementById('modal-body').innerHTML = ctxHtml + buildFillableF08();
-    loadFillable('F-08');
-    bindFillableInputs('F-08');
+    const fillHtml = f.id === 'F-08' ? buildFillableF08() : buildFillableGeneric(f.id);
+    document.getElementById('modal-body').innerHTML = ctxHtml + fillHtml;
+    loadFillable(f.id);
+    bindFillableInputs(f.id);
   } else {
     btn.textContent = '✏️ ملء النموذج';
     document.getElementById('modal-body').innerHTML = ctxHtml + f.html;
   }
+}
+
+function buildFillableGeneric(ficheId) {
+  const f = window.FICHES.find(x => x.id === ficheId);
+  if (!f) return '';
+
+  const hasSaved = !!localStorage.getItem('fill-' + ficheId);
+  const savedBadge = hasSaved ? `<span class="fi-saved-badge">💾 يوجد حفظ مسبق</span>` : '';
+
+  const tmp = document.createElement('div');
+  tmp.innerHTML = f.html;
+
+  let n = 0;
+  const key = (p) => p + '-' + (++n);
+
+  // Header dots → inputs
+  tmp.querySelectorAll('.fp-hdots').forEach(el => {
+    const inp = document.createElement('input');
+    inp.className = 'fi-input'; inp.dataset.fkey = key('hd');
+    inp.placeholder = '...'; inp.autocomplete = 'off';
+    el.replaceWith(inp);
+  });
+
+  // Placeholder spans (يحدد ...) → inline inputs with placeholder text
+  tmp.querySelectorAll('.fp-ph').forEach(el => {
+    const ph = el.textContent.replace(/[()]/g, '').trim();
+    const inp = document.createElement('input');
+    inp.className = 'fi-input fi-input-inline'; inp.dataset.fkey = key('ph');
+    inp.placeholder = ph; inp.autocomplete = 'off';
+    el.replaceWith(inp);
+  });
+
+  // Dot-line spans → inputs
+  tmp.querySelectorAll('.fp-dots-line, .fp-star-val').forEach(el => {
+    const inp = document.createElement('input');
+    inp.className = 'fi-input'; inp.dataset.fkey = key('dl');
+    inp.placeholder = '...'; inp.autocomplete = 'off';
+    el.replaceWith(inp);
+  });
+
+  // Empty table cells → contenteditable divs
+  tmp.querySelectorAll('table tbody td').forEach(td => {
+    if (td.innerHTML.trim() === '') {
+      const div = document.createElement('div');
+      div.className = 'fi-cell'; div.dataset.fkey = key('tc');
+      div.contentEditable = 'true';
+      td.appendChild(div);
+    }
+  });
+
+  const inner = tmp.querySelector('.fiche-preview');
+  const body = inner ? inner.innerHTML : tmp.innerHTML;
+
+  return `<div class="fiche-preview fiche-fillable" id="fiche-fill-${ficheId}">
+  <div class="fi-toolbar no-print">
+    <span class="fi-toolbar-label">✏️ وضع الملء ${savedBadge}</span>
+    <button class="fi-btn-clear" onclick="clearFillable('${ficheId}')">🗑️ مسح</button>
+    <button class="fi-btn-print" onclick="printFillable('${ficheId}')">🖨️ طباعة</button>
+  </div>
+  ${body}
+</div>`;
 }
 
 function buildFillableF08() {
@@ -1383,8 +1637,8 @@ function runSearch(query) {
   });
 
   // Search legal
-  (window.LEGAL || []).forEach(l => {
-    const text = (l.title + ' ' + (l.subtitle || '') + ' ' + (l.context || '') + ' ' + (l.keyArticles || []).join(' ') + ' ' + (l.relevance || '')).toLowerCase();
+  Object.entries(window.LEGAL_DOCS || {}).forEach(([id, l]) => {
+    const text = (l.title + ' ' + (l.subtitle || '') + ' ' + (l.context || '') + ' ' + (l.extracts || []).join(' ')).toLowerCase();
     if (text.includes(q)) {
       hits.push({
         section: 'legal',
@@ -1392,7 +1646,7 @@ function runSearch(query) {
         icon: '⚖️',
         title: l.title,
         sub: l.subtitle || '',
-        action: () => { closeSearch(); navigateTo('legal'); },
+        action: () => { closeSearch(); navigateTo('legal'); showLegalView('doc:' + id); },
       });
     }
   });

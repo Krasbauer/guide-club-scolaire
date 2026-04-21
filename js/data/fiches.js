@@ -37,7 +37,7 @@ window.FICHES = [
     id: 'F-01', group: 'green', groupLabel: 'إحداث النادي',
     num: 'ن-01', title: 'إعلان العزم على تأسيس النادي',
     desc: 'إعلان رسمي من الإدارة لاستقطاب الأعضاء قبل الجمع التأسيسي',
-    step: 'step-5', pdfPage: 12,
+    step: 'step-5', pdfPage: 12, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">نموذج إعلان العزم على تأسيس النادي</div>
   <div class="fp-announce-wrap">
@@ -68,7 +68,7 @@ window.FICHES = [
     id: 'F-02', group: 'green', groupLabel: 'إحداث النادي',
     num: 'ن-02', title: 'محضر تأسيس النادي',
     desc: 'نموذج محضر الجمع العام التأسيسي وانتخاب مكتب النادي',
-    step: 'step-6', pdfPage: 13,
+    step: 'step-6', pdfPage: 13, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">نموذج محضر تأسيس النادي</div>
   <div class="fp-announce-wrap">
@@ -97,7 +97,7 @@ window.FICHES = [
     id: 'F-03', group: 'green', groupLabel: 'إحداث النادي',
     num: 'ن-03', title: 'إعلان عن تأسيس النادي',
     desc: 'إعلان رسمي بعد التأسيس لفتح باب الانخراط أمام الجميع',
-    step: 'step-6', pdfPage: 14,
+    step: 'step-6', pdfPage: 14, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">نموذج إعلان عن تأسيس النادي</div>
   <div class="fp-announce-wrap">
@@ -122,7 +122,7 @@ window.FICHES = [
     id: 'F-04', group: 'gold', groupLabel: 'التخطيط',
     num: 'ن-04', title: 'نموذج برنامج عمل',
     desc: 'جدول الأنشطة السنوية: الموضوع، فترة الإنجاز، المتدخلون، الفئات المستهدفة',
-    step: 'step-8', pdfPage: 15,
+    step: 'step-8', pdfPage: 15, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">نموذج برنامج عمل</div>
   ${hdr()}
@@ -157,7 +157,7 @@ window.FICHES = [
     id: 'F-05', group: 'gold', groupLabel: 'التخطيط',
     num: 'ن-05', title: 'نموذج خطة عمل',
     desc: 'ربط الأهداف العامة بالأنشطة المبرمجة ومجالاتها ومؤطريها وآجالها',
-    step: 'step-8', pdfPage: 16,
+    step: 'step-8', pdfPage: 16, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">نموذج خطة عمل</div>
   ${hdr()}
@@ -182,7 +182,7 @@ window.FICHES = [
     id: 'F-06', group: 'gold', groupLabel: 'التخطيط',
     num: 'ن-06', title: 'نموذج برمجة سنوية لأنشطة النادي',
     desc: 'جدول زمني Gantt: الأنشطة × الأشهر (أكتوبر → شتنبر) — 12 شهراً',
-    step: 'step-8', pdfPage: 17,
+    step: 'step-8', pdfPage: 17, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">نموذج لبرمجة سنوية لأنشطة النادي</div>
   ${hdr()}
@@ -212,7 +212,7 @@ window.FICHES = [
     id: 'F-07', group: 'gold', groupLabel: 'التخطيط',
     num: 'ن-07', title: 'بطاقة عناصر مشروع النادي',
     desc: '8 محاور: الأهداف، الأنشطة، النتائج، الفئات، المتدخلون، الوسائل، التأطير، التمويل',
-    step: 'step-7', pdfPage: 18,
+    step: 'step-7', pdfPage: 18, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">بطاقة عناصر مشروع النادي</div>
   ${hdr()}
@@ -289,7 +289,7 @@ window.FICHES = [
     id: 'F-09', group: 'blue', groupLabel: 'التنفيذ',
     num: 'ن-09', title: 'بطاقة عناصر محضر الاجتماع',
     desc: 'جدول الأعمال، الحاضرون، المتغيبون، نتائج الاجتماع وقراراته',
-    step: 'step-9', pdfPage: 20,
+    step: 'step-9', pdfPage: 20, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">بطاقة عناصر محضر الاجتماع</div>
   ${hdr(`
@@ -336,7 +336,7 @@ window.FICHES = [
     id: 'F-10', group: 'violet', groupLabel: 'التقويم',
     num: 'ن-10', title: 'بطاقة تقويم حصيلة النادي',
     desc: 'تقييم شامل لأداء النادي: الأطراف وأدوارها، الأهداف، الأنشطة، المنخرطون، الدروس، المقترحات (3 صفحات)',
-    step: 'step-10', pdfPage: 23,
+    step: 'step-10', pdfPage: 23, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">بطاقة تقويم حصيلة النادي</div>
   ${hdr()}
@@ -443,7 +443,7 @@ window.FICHES = [
     id: 'F-11', group: 'violet', groupLabel: 'التقويم',
     num: 'ن-11', title: 'بطاقة تقويم الأندية (مستوى المؤسسة)',
     desc: 'تقييم إجمالي لجميع أندية المؤسسة: المحدثة، المنخرطون، الأثر، الحصيلة، الدروس (صفحتان)',
-    step: 'step-11', pdfPage: 26,
+    step: 'step-11', pdfPage: 26, fillable: true,
     html: `<div class="fiche-preview">
   <div class="fp-title">بطاقة تقويم الأندية</div>
   <div class="fp-header">
