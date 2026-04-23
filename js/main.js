@@ -20,7 +20,7 @@ const SECTIONS = ['home', 'concept', 'parcours', 'fiches', 'legal'];
 const UPSTASH_URL = 'https://nearby-leech-70999.upstash.io';
 const UPSTASH_TOKEN = 'gQAAAAAAARVXAAIgcDIwNjc0Y2UyY2RkZmE0MTQwYjY0YzM1ODUwOWJiY2Q2ZA';
 const STATS_KEY = 'clubs-scolaires:stats';
-const STATS_KEYS = ['visits', 'pdf-downloads', 'docx-downloads', 'installs'];
+const STATS_KEYS = ['users', 'downloads', 'visits'];
 
 function upstash(cmd) {
   return fetch(UPSTASH_URL + '/' + cmd, {
@@ -66,7 +66,6 @@ function fetchStats() {
   }).catch(() => {});
 }
 
-window.addEventListener('appinstalled', () => trackEvent('installs'));
 
 /* ── Init ───────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
@@ -80,6 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
   bindBackButton();
   bindSearch();
   trackEvent('visits');
+  const today = new Date().toDateString();
+  if (localStorage.getItem('user-last-counted') !== today) {
+    localStorage.setItem('user-last-counted', today);
+    trackEvent('users');
+  }
   fetchStats();
 
   // Restore section from URL hash on load, else default to home
@@ -162,20 +166,16 @@ function renderHome() {
       <div class="stats-title">إحصاءات الاستخدام</div>
       <div class="stats-grid">
         <div class="stat-item">
+          <span class="stat-num" id="stat-users">---</span>
+          <span class="stat-label">مستخدم</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" id="stat-downloads">---</span>
+          <span class="stat-label">تحميل</span>
+        </div>
+        <div class="stat-item">
           <span class="stat-num" id="stat-visits">---</span>
           <span class="stat-label">زيارة</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-num" id="stat-pdf-downloads">---</span>
-          <span class="stat-label">تحميل PDF</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-num" id="stat-docx-downloads">---</span>
-          <span class="stat-label">تحميل DOCX</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-num" id="stat-installs">---</span>
-          <span class="stat-label">تثبيت</span>
         </div>
       </div>
     </div>
@@ -719,14 +719,14 @@ function openFiche(id) {
   docxBtn.href = 'fiches-docx/' + f.id + '.docx';
   docxBtn.setAttribute('download', f.num + ' — ' + f.title + '.docx');
   docxBtn.style.display = '';
-  docxBtn.onclick = () => trackEvent('docx-downloads');
+  docxBtn.onclick = () => trackEvent('downloads');
 
   // PDF button
   const pdfBtn = document.getElementById('modal-pdf-btn');
   pdfBtn.href = 'fiches-pdf/' + f.id + '.pdf';
   pdfBtn.setAttribute('download', f.num + ' — ' + f.title + '.pdf');
   pdfBtn.style.display = '';
-  pdfBtn.onclick = () => trackEvent('pdf-downloads');
+  pdfBtn.onclick = () => trackEvent('downloads');
 
   document.getElementById('fiche-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
