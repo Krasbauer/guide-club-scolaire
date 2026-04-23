@@ -191,11 +191,6 @@ function renderHome() {
       <p>الأساتذة المتدربون بالمراكز الجهوية لمهن التربية والتكوين (CRMEF) · الأساتذة الجدد في الميدان · منسقو الأندية التربوية</p>
     </div>
 
-    <div class="home-info-card">
-      <h2 class="home-card-title">📚 المصدر الرسمي</h2>
-      <p>دليل الحياة المدرسية 2019 وملاحقه — مديرية الحياة المدرسية، وزارة التربية الوطنية المغربية</p>
-    </div>
-
     <!-- Navigation -->
     <div class="home-section-title">الأقسام</div>
     <div class="cards-grid">
@@ -234,6 +229,20 @@ function renderHome() {
         </div>
         <span class="card-arrow">‹</span>
       </div>
+    </div>
+
+    <!-- Features -->
+    <div class="home-features">
+      <div class="home-features-title">المميزات</div>
+      <ul class="home-features-list">
+        <li>11 نموذجاً رسمياً قابلاً للتعبئة والحفظ والطباعة</li>
+        <li>تحميل بصيغتَي PDF وDOCX لكل نموذج</li>
+        <li>11 خطوة مفصَّلة لمسار إحداث النادي</li>
+        <li>14 مرجعاً قانونياً مُصنَّفاً في 3 أصناف</li>
+        <li>وضع المُيسِّر للأنشطة الصفية التفاعلية</li>
+        <li>بنك الأنشطة — 8 مجالات و32 مقترحاً</li>
+        <li>بحث سريع في جميع محتوى التطبيق</li>
+      </ul>
     </div>
 
     <!-- Facilitator mode -->
