@@ -1145,6 +1145,30 @@ body.printing-fiche #print-area {
 .fi-cell:focus { background: var(--accent-bg); }
 .fi-cell:empty::before { content: attr(placeholder); color: #ccc; }
 
+/* Input inside table cells */
+.fi-cell-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: .78rem;
+  color: var(--txt);
+  padding: .15rem .2rem;
+  direction: rtl;
+  box-sizing: border-box;
+}
+.fi-cell-input:focus { background: var(--accent-bg); border-bottom-color: var(--accent); }
+
+/* Gantt checkboxes (F-06) */
+.fi-gantt-check {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
 /* Toolbar */
 .fi-toolbar {
   display: flex;
@@ -1184,6 +1208,7 @@ body.printing-fiche #print-area {
 /* Print values (used in printFillable serialization) */
 .fi-print-val { display: inline; border-bottom: 1px solid #999; min-width: 60px; }
 .fi-print-block { display: block; white-space: pre-wrap; font-size: .85rem; line-height: 1.7; }
+.fi-print-check { display: inline-block; min-width: 1rem; text-align: center; }
 
 /* --- Search overlay ----------------------------------- */
 .search-overlay {

@@ -1334,155 +1334,20 @@ function toggleFillMode() {
 
   if (state.fillMode) {
     btn.textContent = '👁 عرض النموذج';
-    const fillHtml = buildFillableGeneric(f.id);
+    const builder = (window.FILL_BUILDERS || {})[f.id];
+    if (!builder) throw new Error(`No fill builder found for ${f.id}`);
+    const fillHtml = builder();
     document.getElementById('modal-body').innerHTML = ctxHtml + fillHtml;
-    loadFillable(f.id);
-    bindFillableInputs(f.id);
+    const root = document.getElementById('fiche-fill-' + f.id);
+    loadFillable(f.id, root);
+    bindFillableInputs(f.id, root);
   } else {
     btn.textContent = '✏️ ملء النموذج';
     document.getElementById('modal-body').innerHTML = ctxHtml + f.html;
   }
 }
 
-function buildFillableGeneric(ficheId) {
-  const f = window.FICHES.find(x => x.id === ficheId);
-  if (!f) return '';
-
-  const hasSaved = !!localStorage.getItem('fill-' + ficheId);
-  const savedBadge = hasSaved ? `<span class="fi-saved-badge">💾 يوجد حفظ مسبق</span>` : '';
-
-  const tmp = document.createElement('div');
-  tmp.innerHTML = f.html;
-
-  let n = 0;
-  const key = (p) => p + '-' + (++n);
-
-  // Header dots → inputs
-  tmp.querySelectorAll('.fp-hdots').forEach(el => {
-    const inp = document.createElement('input');
-    inp.className = 'fi-input'; inp.dataset.fkey = key('hd');
-    inp.placeholder = '...'; inp.autocomplete = 'off';
-    el.replaceWith(inp);
-  });
-
-  // Placeholder spans (يحدد ...) → inline inputs with placeholder text
-  tmp.querySelectorAll('.fp-ph').forEach(el => {
-    const ph = el.textContent.replace(/[()]/g, '').trim();
-    const inp = document.createElement('input');
-    inp.className = 'fi-input fi-input-inline'; inp.dataset.fkey = key('ph');
-    inp.placeholder = ph; inp.autocomplete = 'off';
-    el.replaceWith(inp);
-  });
-
-  // Dot-line spans → inputs
-  tmp.querySelectorAll('.fp-dots-line, .fp-star-val').forEach(el => {
-    const inp = document.createElement('input');
-    inp.className = 'fi-input'; inp.dataset.fkey = key('dl');
-    inp.placeholder = '...'; inp.autocomplete = 'off';
-    el.replaceWith(inp);
-  });
-
-  // Empty table cells → contenteditable divs
-  tmp.querySelectorAll('table tbody td').forEach(td => {
-    if (td.innerHTML.trim() === '') {
-      const div = document.createElement('div');
-      div.className = 'fi-cell'; div.dataset.fkey = key('tc');
-      div.contentEditable = 'true';
-      td.appendChild(div);
-    }
-  });
-
-  const inner = tmp.querySelector('.fiche-preview');
-  const body = inner ? inner.innerHTML : tmp.innerHTML;
-
-  return `<div class="fiche-preview fiche-fillable" id="fiche-fill-${ficheId}">
-  <div class="fi-toolbar no-print">
-    <span class="fi-toolbar-label">✏️ وضع الملء ${savedBadge}</span>
-    <button class="fi-btn-clear" onclick="clearFillable('${ficheId}')">🗑️ مسح</button>
-    <button class="fi-btn-print" onclick="printFillable('${ficheId}')">🖨️ طباعة</button>
-  </div>
-  ${body}
-</div>`;
-}
-
-
-function bindFillableInputs(ficheId) {
-  let debounce;
-  const save = () => {
-    clearTimeout(debounce);
-    debounce = setTimeout(() => saveFillable(ficheId), 700);
-  };
-  document.querySelectorAll('[data-fkey]').forEach(el => {
-    el.addEventListener('input', save);
-  });
-}
-
-function saveFillable(ficheId) {
-  const data = {};
-  document.querySelectorAll('[data-fkey]').forEach(el => {
-    data[el.dataset.fkey] = el.isContentEditable ? el.textContent : el.value;
-  });
-  localStorage.setItem('fill-' + ficheId, JSON.stringify(data));
-}
-
-function loadFillable(ficheId) {
-  const raw = localStorage.getItem('fill-' + ficheId);
-  if (!raw) return;
-  const data = JSON.parse(raw);
-  document.querySelectorAll('[data-fkey]').forEach(el => {
-    const val = data[el.dataset.fkey];
-    if (val === undefined) return;
-    if (el.isContentEditable) el.textContent = val;
-    else el.value = val;
-  });
-}
-
-function clearFillable(ficheId) {
-  if (!confirm('مسح جميع البيانات المحفوظة لهذا النموذج؟')) return;
-  localStorage.removeItem('fill-' + ficheId);
-  document.querySelectorAll('[data-fkey]').forEach(el => {
-    if (el.isContentEditable) el.textContent = '';
-    else el.value = '';
-  });
-}
-
-function printFillable(ficheId) {
-  // Clone the fillable node, serialize input values into spans, then print
-  const src = document.getElementById('fiche-fill-' + ficheId);
-  if (!src) return;
-  const clone = src.cloneNode(true);
-
-  // Replace inputs with value spans
-  clone.querySelectorAll('input[data-fkey]').forEach(el => {
-    const span = document.createElement('span');
-    span.className = 'fi-print-val';
-    span.textContent = el.value || '';
-    el.replaceWith(span);
-  });
-  // Replace textareas with pre-formatted divs
-  clone.querySelectorAll('textarea[data-fkey]').forEach(el => {
-    const div = document.createElement('div');
-    div.className = 'fi-print-val fi-print-block';
-    div.textContent = el.value || '';
-    el.replaceWith(div);
-  });
-  // Remove contenteditable from cells
-  clone.querySelectorAll('[contenteditable]').forEach(el => {
-    el.removeAttribute('contenteditable');
-  });
-  // Remove toolbar
-  const tb = clone.querySelector('.fi-toolbar');
-  if (tb) tb.remove();
-
-  const area = document.getElementById('print-area');
-  area.innerHTML = `<div style="font-family:'IBM Plex Sans Arabic',Arial,sans-serif; direction:rtl; padding:1cm;">${clone.outerHTML}</div>`;
-  document.body.classList.add('printing-fiche');
-  window.print();
-  setTimeout(() => {
-    document.body.classList.remove('printing-fiche');
-    area.innerHTML = '';
-  }, 1000);
-}
+/* save / load / bind / clear / print → js/fill/engine.js */
 
 /* ── Search ──────────────────────────────────────────── */
 function openSearch() {
