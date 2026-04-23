@@ -11,6 +11,7 @@ const state = {
   showInstitutional: true,
   fillMode: false,
   legalView: 'list',
+  legalOpenCat: null,
 };
 
 /* ── Section ids ────────────────────────────────────── */
@@ -797,6 +798,36 @@ function legalFindCat(docId) {
   return '1';
 }
 
+function legalFindPath(docId) {
+  for (const cat of window.LEGAL_TREE) {
+    if (cat.docs && cat.docs.includes(docId)) return { cat, sub: null };
+    if (cat.subcats) {
+      for (const sub of cat.subcats) {
+        if (sub.docs.includes(docId)) return { cat, sub };
+      }
+    }
+  }
+  return { cat: window.LEGAL_TREE[0], sub: null };
+}
+
+function toggleLegalAcc(catId) {
+  const item = document.getElementById('legal-acc-' + catId);
+  if (!item) return;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.legal-acc-item').forEach(el => el.classList.remove('open'));
+  if (!isOpen) {
+    item.classList.add('open');
+    state.legalOpenCat = catId;
+  } else {
+    state.legalOpenCat = null;
+  }
+}
+
+function showLegalList(openCatId) {
+  state.legalOpenCat = openCatId || null;
+  showLegalView('list');
+}
+
 function legalDocRow(id) {
   const d = window.LEGAL_DOCS[id];
   if (!d) return '';
@@ -804,8 +835,9 @@ function legalDocRow(id) {
     <div class="legal-doc-row" onclick="showLegalView('doc:${id}')">
       <div class="legal-doc-row-body">
         <div class="legal-doc-row-title">${d.title}</div>
-        <div class="legal-doc-row-sub">${d.date}</div>
+        <div class="legal-doc-row-sub">${d.subtitle || d.date}</div>
       </div>
+      <span class="legal-doc-row-year">${d.date}</span>
       ${d.download ? '<span class="legal-dl-badge">PDF</span>' : ''}
       <span class="legal-doc-row-arrow">‹</span>
     </div>`;
@@ -839,16 +871,27 @@ function showLegalView(view) {
         <h1 class="legal-section-title">المرجعيات المؤطرة للأندية التربوية</h1>
         <p class="legal-section-sub">3 أصناف · ${Object.keys(window.LEGAL_DOCS).length} مرجعاً</p>
       </div>
-      <div class="legal-cats-list">
-        ${cats.map((cat, i) => `
-          <div class="legal-cat-card" onclick="showLegalView('cat:${cat.id}')">
-            <div class="legal-cat-card-num">${i + 1}</div>
-            <div class="legal-cat-card-body">
-              <div class="legal-cat-card-title">${cat.title}</div>
-              <div class="legal-cat-card-count">${legalDocCount(cat)}</div>
+      <div class="legal-accordion">
+        ${cats.map(cat => `
+          <div class="legal-acc-item${state.legalOpenCat === cat.id ? ' open' : ''}" id="legal-acc-${cat.id}">
+            <button class="legal-acc-header" onclick="toggleLegalAcc('${cat.id}')">
+              <div class="legal-acc-title-wrap">
+                <span class="legal-acc-title">${cat.title}</span>
+                <span class="legal-acc-count">${legalDocCount(cat)}</span>
+              </div>
+              <span class="legal-acc-chev">▾</span>
+            </button>
+            <div class="legal-acc-body">
+              ${cat.subcats
+                ? cat.subcats.map(sub => `
+                    <div class="legal-subcat-label">${sub.id} — ${sub.title}</div>
+                    ${sub.docs.map(legalDocRow).join('')}
+                  `).join('')
+                : (cat.docs || []).map(legalDocRow).join('')
+              }
             </div>
-            <span class="legal-cat-card-arrow">‹</span>
-          </div>`).join('')}
+          </div>
+        `).join('')}
       </div>
       ${dlBlock}
     `;
@@ -857,26 +900,8 @@ function showLegalView(view) {
 
   if (view.startsWith('cat:')) {
     const catId = view.slice(4);
-    const cat = window.LEGAL_TREE.find(c => c.id === catId);
-    if (!cat) { showLegalView('list'); return; }
-
-    let content = '';
-    if (cat.subcats) {
-      content = cat.subcats.map(sub => `
-        <div class="legal-subcat-label">${sub.id} — ${sub.title}</div>
-        ${sub.docs.map(legalDocRow).join('')}
-      `).join('');
-    } else {
-      content = (cat.docs || []).map(legalDocRow).join('');
-    }
-
-    el.innerHTML = `
-      <button class="legal-back-btn" onclick="showLegalView('list')">رجوع →</button>
-      <div class="legal-cat-page-title">${cat.title}</div>
-      ${content}
-    `;
-    el.scrollTop = 0;
-    window.scrollTo(0, 0);
+    state.legalOpenCat = catId;
+    showLegalView('list');
     return;
   }
 
@@ -884,7 +909,17 @@ function showLegalView(view) {
     const docId = view.slice(4);
     const d = window.LEGAL_DOCS[docId];
     if (!d) { showLegalView('list'); return; }
-    const catId = legalFindCat(docId);
+    const { cat, sub } = legalFindPath(docId);
+
+    const breadcrumbHtml = `
+      <nav class="legal-breadcrumb">
+        <button class="legal-bc-btn" onclick="showLegalList('${cat.id}')">القانون</button>
+        <span class="legal-bc-sep">‹</span>
+        <button class="legal-bc-btn" onclick="showLegalList('${cat.id}')">${cat.title}</button>
+        ${sub ? `<span class="legal-bc-sep">‹</span><button class="legal-bc-btn" onclick="showLegalList('${cat.id}')">${sub.title}</button>` : ''}
+        <span class="legal-bc-sep">‹</span>
+        <span class="legal-bc-current">${d.title}</span>
+      </nav>`;
 
     const extractsHtml = d.extracts.map(e => `<li>${e}</li>`).join('');
 
@@ -912,7 +947,7 @@ function showLegalView(view) {
         'التكوين الأساس بمراكز التكوين','التنظيم — الحوض المدرسي','القيادة ولوحة التتبع',
         'إدماج التخطيط والميزنة والتنفيذ','الالتزام والتواصل',
       ];
-      const highlight = [3, 5]; // 0-indexed: P4 = index 3, P6 = index 5
+      const highlight = [3, 5];
       const cells = programs.map((p, i) => {
         const isHL = highlight.includes(i);
         return `<div class="itaar-cell${isHL ? ' itaar-cell-highlight' : ''}">
@@ -933,7 +968,7 @@ function showLegalView(view) {
     }
 
     el.innerHTML = `
-      <button class="legal-back-btn" onclick="showLegalView('cat:${catId}')">رجوع →</button>
+      ${breadcrumbHtml}
       <div class="legal-doc-page">
         <h2 class="legal-doc-title">${d.title}</h2>
         <div class="legal-doc-meta">

@@ -845,24 +845,33 @@ main {
 .legal-section-title { font-size: 1.05rem; font-weight: 700; color: var(--accent); margin: 0 0 .2rem; }
 .legal-section-sub { font-size: .78rem; color: var(--txt-muted); margin: 0; }
 
-.legal-cats-list { display: flex; flex-direction: column; gap: .55rem; margin-bottom: 1rem; }
-.legal-cat-card {
-  display: flex; align-items: center; gap: .75rem;
+/* Accordion */
+.legal-accordion { display: flex; flex-direction: column; gap: .55rem; margin-bottom: 1rem; }
+
+.legal-acc-item {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: .85rem 1rem;
-  cursor: pointer; transition: background .15s;
+  border-radius: var(--radius); overflow: hidden;
 }
-.legal-cat-card:active { background: var(--accent-bg); }
-.legal-cat-card-num {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: var(--accent-bg); color: var(--accent);
-  font-size: .95rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+.legal-acc-header {
+  display: flex; align-items: center; width: 100%;
+  padding: .85rem 1rem; cursor: pointer; text-align: right;
+  background: none; border: none; font-family: inherit;
+  transition: background .15s;
 }
-.legal-cat-card-body { flex: 1; }
-.legal-cat-card-title { font-size: .9rem; font-weight: 700; line-height: 1.3; }
-.legal-cat-card-count { font-size: .75rem; color: var(--txt-muted); margin-top: 2px; }
-.legal-cat-card-arrow { color: var(--txt-muted); font-size: 1.2rem; }
+.legal-acc-header:active { background: var(--accent-bg); }
+.legal-acc-item.open > .legal-acc-header {
+  background: var(--accent-bg); border-bottom: 1px solid var(--border);
+}
+.legal-acc-title-wrap { flex: 1; }
+.legal-acc-title { display: block; font-size: .9rem; font-weight: 700; line-height: 1.3; }
+.legal-acc-count { font-size: .73rem; color: var(--txt-muted); }
+.legal-acc-chev {
+  color: var(--txt-muted); font-size: .8rem; flex-shrink: 0;
+  transition: transform .22s; margin-right: .25rem;
+}
+.legal-acc-item.open .legal-acc-chev { transform: rotate(180deg); }
+.legal-acc-body { display: none; padding: .65rem .75rem .3rem; }
+.legal-acc-item.open .legal-acc-body { display: block; }
 
 /* Downloads collapsible */
 .legal-dl-block {
@@ -885,18 +894,24 @@ main {
 }
 .legal-dl-item:last-child { border-bottom: none; }
 
-/* Level 2 — category page */
-.legal-back-btn {
-  display: inline-flex; align-items: center;
-  background: none; border: none; padding: .3rem 0;
-  color: var(--accent); font-size: .85rem; font-weight: 600;
-  cursor: pointer; margin-bottom: .75rem;
+/* Breadcrumb — doc view */
+.legal-breadcrumb {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .3rem;
+  padding: .55rem 0 .8rem; border-bottom: 1px solid var(--border);
+  margin-bottom: .9rem;
 }
-.legal-cat-page-title {
-  font-size: .95rem; font-weight: 700; color: var(--accent);
-  margin-bottom: .75rem; padding-bottom: .5rem;
-  border-bottom: 2px solid var(--accent-bg);
+.legal-bc-btn {
+  background: none; border: none; padding: 0; font-family: inherit;
+  color: var(--accent); font-size: .78rem; font-weight: 600; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+  max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.legal-bc-sep { color: var(--txt-muted); font-size: .72rem; }
+.legal-bc-current {
+  font-size: .78rem; font-weight: 700; color: var(--txt-muted);
+  max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
 .legal-subcat-label {
   font-size: .72rem; font-weight: 700; color: var(--txt-muted);
   text-transform: uppercase; letter-spacing: .4px;
@@ -913,6 +928,11 @@ main {
 .legal-doc-row-body { flex: 1; }
 .legal-doc-row-title { font-size: .88rem; font-weight: 700; line-height: 1.3; }
 .legal-doc-row-sub { font-size: .72rem; color: var(--txt-muted); margin-top: 2px; }
+.legal-doc-row-year {
+  font-size: .65rem; font-weight: 700; color: var(--txt-muted);
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 2px 6px; flex-shrink: 0; white-space: nowrap;
+}
 .legal-dl-badge {
   background: var(--accent-bg); color: var(--accent);
   font-size: .62rem; font-weight: 700; padding: 2px 7px;
