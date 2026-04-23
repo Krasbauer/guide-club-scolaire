@@ -17,8 +17,8 @@ const state = {
 const SECTIONS = ['home', 'concept', 'parcours', 'fiches', 'legal'];
 
 /* ── Analytics ──────────────────────────────────────── */
-const UPSTASH_URL = 'https://YOUR-DB.upstash.io';
-const UPSTASH_TOKEN = 'YOUR-TOKEN';
+const UPSTASH_URL = 'https://nearby-leech-70999.upstash.io';
+const UPSTASH_TOKEN = 'gQAAAAAAARVXAAIgcDIwNjc0Y2UyY2RkZmE0MTQwYjY0YzM1ODUwOWJiY2Q2ZA';
 const STATS_KEY = 'clubs-scolaires:stats';
 const STATS_KEYS = ['visits', 'pdf-downloads', 'docx-downloads', 'installs'];
 
