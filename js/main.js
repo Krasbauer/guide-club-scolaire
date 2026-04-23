@@ -17,34 +17,53 @@ const state = {
 const SECTIONS = ['home', 'concept', 'parcours', 'fiches', 'legal'];
 
 /* ── Analytics ──────────────────────────────────────── */
-const STATS_NS = 'clubs-scolaires';
-const STATS_API = 'https://api.counterapi.dev/v1/' + STATS_NS;
+const UPSTASH_URL = 'https://YOUR-DB.upstash.io';
+const UPSTASH_TOKEN = 'YOUR-TOKEN';
+const STATS_KEY = 'clubs-scolaires:stats';
 const STATS_KEYS = ['visits', 'pdf-downloads', 'docx-downloads', 'installs'];
+
+function upstash(cmd) {
+  return fetch(UPSTASH_URL + '/' + cmd, {
+    headers: { Authorization: 'Bearer ' + UPSTASH_TOKEN }
+  }).then(r => r.json());
+}
+
+function parseCounts(result) {
+  const counts = {};
+  for (let i = 0; i < result.length; i += 2) counts[result[i]] = parseInt(result[i + 1]) || 0;
+  return counts;
+}
+
+function updateStatEls(counts) {
+  STATS_KEYS.forEach(k => {
+    const el = document.getElementById('stat-' + k);
+    if (el && counts[k] !== undefined) el.textContent = counts[k].toLocaleString('en');
+  });
+}
 
 function trackEvent(key) {
   const cached = JSON.parse(localStorage.getItem('stats') || '{}');
   cached[key] = (cached[key] || 0) + 1;
   localStorage.setItem('stats', JSON.stringify(cached));
-  fetch(STATS_API + '/' + key + '/up').then(r => r.json()).then(d => {
-    cached[key] = d.count;
-    localStorage.setItem('stats', JSON.stringify(cached));
-    const el = document.getElementById('stat-' + key);
-    if (el) el.textContent = d.count.toLocaleString('en');
-  }).catch(() => {});
+  upstash('hincrby/' + STATS_KEY + '/' + key + '/1')
+    .then(() => upstash('hgetall/' + STATS_KEY))
+    .then(d => {
+      const counts = parseCounts(d.result);
+      Object.assign(cached, counts);
+      localStorage.setItem('stats', JSON.stringify(cached));
+      updateStatEls(counts);
+    }).catch(() => {});
 }
 
 function fetchStats() {
   const cached = JSON.parse(localStorage.getItem('stats') || '{}');
-  STATS_KEYS.forEach(key => {
-    const el = document.getElementById('stat-' + key);
-    if (el && cached[key]) el.textContent = Number(cached[key]).toLocaleString('en');
-    fetch(STATS_API + '/' + key).then(r => r.json()).then(d => {
-      const updated = JSON.parse(localStorage.getItem('stats') || '{}');
-      updated[key] = d.count;
-      localStorage.setItem('stats', JSON.stringify(updated));
-      if (el) el.textContent = d.count.toLocaleString('en');
-    }).catch(() => {});
-  });
+  updateStatEls(cached);
+  upstash('hgetall/' + STATS_KEY).then(d => {
+    const counts = parseCounts(d.result);
+    Object.assign(cached, counts);
+    localStorage.setItem('stats', JSON.stringify(cached));
+    updateStatEls(counts);
+  }).catch(() => {});
 }
 
 window.addEventListener('appinstalled', () => trackEvent('installs'));
@@ -817,7 +836,7 @@ function showLegalView(view) {
             <div class="legal-cat-card-num">${i + 1}</div>
             <div class="legal-cat-card-body">
               <div class="legal-cat-card-title">${cat.title}</div>
-              <div class="legal-cat-card-count">${legalDocCount(cat)} مرجعاً</div>
+              <div class="legal-cat-card-count">${legalDocCount(cat)}</div>
             </div>
             <span class="legal-cat-card-arrow">‹</span>
           </div>`).join('')}
@@ -940,7 +959,7 @@ function say(text) {
 function fpCollapsible(id, label, body) {
   return `
     <div style="border:1px solid rgba(255,255,255,.12); border-radius:8px; margin-top:.75rem; overflow:hidden;">
-      <div onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.fc-chev').style.transform=this.nextElementSibling.classList.contains('open')?'rotate(180deg)':''"
+      <div onclick="const b=this.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'; this.querySelector('.fc-chev').style.transform=b.style.display==='block'?'rotate(180deg)':''"
            style="display:flex; justify-content:space-between; align-items:center; padding:.6rem .85rem; background:rgba(255,255,255,.07); cursor:pointer; font-size:.85rem; color:var(--gold); font-weight:600;">
         <span>${label}</span>
         <span class="fc-chev" style="transition:transform .2s; font-size:.75rem;">▾</span>
@@ -1382,14 +1401,14 @@ function runSearch(query) {
 
   // Search fiches
   (window.FICHES || []).forEach(f => {
-    const text = (f.title + ' ' + (f.pills || []).join(' ') + ' ' + stripHtml(f.body || '')).toLowerCase();
+    const text = (f.title + ' ' + (f.desc || '')).toLowerCase();
     if (text.includes(q)) {
       hits.push({
         section: 'fiches',
         sectionLabel: 'البطاقات',
         icon: '📋',
         title: f.title,
-        sub: (f.pills || []).join(' · '),
+        sub: f.desc,
         action: () => { closeSearch(); openFiche(f.id); },
       });
     }
